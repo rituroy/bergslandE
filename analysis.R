@@ -13,6 +13,8 @@ if (computerFlag=="cluster") {
 } else {
 	dirSrc="/Users/royr/UCSF/"
 	dirSrc2=dirSrc
+    dirSrc3="code/"
+    dirSrc3="/Users/royr/Downloads/bergslandE-net_2015/"
 	setwd(paste(dirSrc2,"EmilyBergsland",sep=""))
 }
 

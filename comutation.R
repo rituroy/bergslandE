@@ -62,7 +62,7 @@ propFlag=">"
 outFormat="png"
 outFormat="pdf"
 
-source("code/funcs.R")
+source(paste(dirSrc3,"funcs.R",sep=""))
 out=getFamilyLevelInfo()
 datGP_m=out$datGP_m
 candGene=out$candGene

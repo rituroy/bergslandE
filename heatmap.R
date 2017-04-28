@@ -13,6 +13,8 @@ if (computerFlag=="cluster") {
 } else {
     dirSrc="/Users/royr/UCSF/"
     dirSrc2=dirSrc
+    dirSrc3="code/"
+    dirSrc3="/Users/royr/Downloads/bergslandE-net_2015/"
     setwd(paste(dirSrc2,"EmilyBergsland",sep=""))
 }
 
@@ -81,12 +83,22 @@ for (nameValueFlag in nameValueList) {
     datadir="results/"
     if (nameValue$value[which(nameValue$name=="subset")]%in%c("ucsf500","ucsf500Fmi")) {
         load(paste(datadir,"tmp_allAssays.RData",sep=""))
+        clinF1=clin1
+        clinF31=clin3
+        clinF32=clin32
+        rm(clin1,clin3,clin32)
         datadir="results/"
         load(paste(datadir,"tmp_ucsf500.RData",sep=""))
         nameValue=read.table("config.tmp",sep="=",h=F,quote="",comment.char="",as.is=T,fill=T,col.names=c("name","value"))
         colId2=unique(c(colId2,c("currPatStatus","ageAtDiag","survSinceInitDiag","pathReview","typeOfPath","stageAtDiag","survSinceStageIV","diff","cellSize","grade","mitoticRate","ki67","note","testUCSF500orFMI","dateOfUCSFsampleUsed","chromosomalCopyChange","noMutDelRearrange","dead")))
         clin3=clinU
-        names(clin3)[match(c("primarySite"),names(clin3))]="disOntTerm2"
+        #names(clin3)[match(c("primarySite"),names(clin3))]="disOntTerm2"
+        clin3$primarySiteEB2=tolower(clin3$primarySiteEB)
+        clin3$primarySiteEB2[which(clin3$primarySiteEB2=="other(lung)")]="lung"
+        clin3$primarySiteEB2[grep("othergi(", clin3$primarySiteEB2,fixed=T)]="otherGI"
+        clin3$primarySiteEB2[grep("other(", clin3$primarySiteEB2,fixed=T)]="other"
+        clin3$primarySiteEB2[grep("unknown", clin3$primarySiteEB2,fixed=T)]="unknown"
+        #clin3$disOntTerm2=clin3$primarySiteEB2
         if (T) {
             clin3$cellSizeEB[which(clin3$cellSizeEB=="small")]="SC"
             clin3$cellSizeEB[which(clin3$cellSizeEB=="large")]="LC"
@@ -98,9 +110,11 @@ for (nameValueFlag in nameValueList) {
             clin3$cellSize[which(clin3$cellSize=="large")]="LC"
             clin3$cellSize[which(clin3$cellSize=="nr")]="NR"
         }
-        #if (exists("clin32")) rm(clin32)
     } else {
         load(paste(datadir,"tmp_allAssays.RData",sep=""))
+        clinF1=clin1
+        clinF31=clin3
+        clinF32=clin32
     }
     annColThis=clin3[,which(!names(clin3)%in%colId2)]
     
@@ -118,17 +132,18 @@ for (nameValueFlag in nameValueList) {
     
     #k=which(nameValue$name=="subset")
     datadir="results/"
-    if (nameValue$value[which(nameValue$name=="subset")]=="fionaVetted") {
-        #load(paste(datadir,"tmp_fiona166_T5aT7Assays.RData",sep=""))
-        load(paste(datadir,"tmp_allAssays.RData",sep=""))
-        nameValue=read.table("config.tmp",sep="=",h=F,quote="",comment.char="",as.is=T,fill=T,col.names=c("name","value"))
-        subsetFlag=c("_fiona166_T5aT7Assays","_lungSmallFionaVettedGI_T5aT7Assays")
-    } else if (nameValue$value[which(nameValue$name=="subset")]%in%c("ucsf500","ucsf500Fmi")) {
+    if (nameValue$value[which(nameValue$name=="subset")]%in%c("ucsf500","ucsf500Fmi")) {
         load(paste(datadir,"tmp_ucsf500.RData",sep=""))
         nameValue=read.table("config.tmp",sep="=",h=F,quote="",comment.char="",as.is=T,fill=T,col.names=c("name","value"))
         subsetFlag=paste("_",nameValue$value[which(nameValue$name=="subset")],sep="")
         clin3=clinU
-        names(clin3)[match(c("primarySite"),names(clin3))]="disOntTerm2"
+        #names(clin3)[match(c("primarySite"),names(clin3))]="disOntTerm2"
+        clin3$primarySiteEB2=tolower(clin3$primarySiteEB)
+        clin3$primarySiteEB2[which(clin3$primarySiteEB2=="other(lung)")]="lung"
+        clin3$primarySiteEB2[grep("othergi(", clin3$primarySiteEB2,fixed=T)]="otherGI"
+        clin3$primarySiteEB2[grep("other(", clin3$primarySiteEB2,fixed=T)]="other"
+        clin3$primarySiteEB2[grep("unknown", clin3$primarySiteEB2,fixed=T)]="unknown"
+        #clin3$disOntTerm2=clin3$primarySiteEB2
         if (F) {
             clin3$diffEB[which(clin3$diffEB=="nr")]="1:NR"
             clin3$diffEB[which(clin3$diffEB=="poor")]="2:poor"
@@ -147,23 +162,28 @@ for (nameValueFlag in nameValueList) {
             clin3$cellSize[which(clin3$cellSize=="small")]="SC"
             clin3$cellSize[which(clin3$cellSize=="large")]="LC"
         }
-        #if (exists("clin32")) rm(clin32)
-        #datGP=datGPU
     } else {
-        load(paste(datadir,"tmp_allAssays.RData",sep=""))
-        nameValue=read.table("config.tmp",sep="=",h=F,quote="",comment.char="",as.is=T,fill=T,col.names=c("name","value"))
-        gene1=unique(clin1$gene[clin1$assayVersion=="T5a"])
-        gene2=unique(clin1$gene[clin1$assayVersion=="T7"])
-        subsetFlag="_allSamples_T5aT7Assays"
-        samId=which(clin1$gene%in%gene1[gene1%in%gene2] & clin1$assayVersion%in%c("T5a","T7"))
-        samId03=which(clin3$id%in%clin1$id[samId])
-        #k=which(nameValue$name=="subset")
-        if (nameValue$value[which(nameValue$name=="subset")]=="jeffVetted") {
-            subsetFlag=c("_jeffVetted_T5aT7Assays","_lungSmallJeffVettedHighGradeGI_T5aT7Assays")
-            samId03=samId03[which(clin3$disOntTerm3[samId03]=="lungSmall" | (clin3$grade[samId03]=="High" & clin3$disOntTerm3[samId03]=="combined"))]
-            samId=samId[which(clin1$id[samId]%in%clin3$id[samId03])]
+        if (nameValue$value[which(nameValue$name=="subset")]=="fionaVetted") {
+            #load(paste(datadir,"tmp_fiona166_T5aT7Assays.RData",sep=""))
+            load(paste(datadir,"tmp_allAssays.RData",sep=""))
+            nameValue=read.table("config.tmp",sep="=",h=F,quote="",comment.char="",as.is=T,fill=T,col.names=c("name","value"))
+            subsetFlag=c("_fiona166_T5aT7Assays","_lungSmallFionaVettedGI_T5aT7Assays")
+        } else {
+            load(paste(datadir,"tmp_allAssays.RData",sep=""))
+            nameValue=read.table("config.tmp",sep="=",h=F,quote="",comment.char="",as.is=T,fill=T,col.names=c("name","value"))
+            gene1=unique(clin1$gene[clin1$assayVersion=="T5a"])
+            gene2=unique(clin1$gene[clin1$assayVersion=="T7"])
+            subsetFlag="_allSamples_T5aT7Assays"
+            samId=which(clin1$gene%in%gene1[gene1%in%gene2] & clin1$assayVersion%in%c("T5a","T7"))
+            samId03=which(clin3$id%in%clin1$id[samId])
+            #k=which(nameValue$name=="subset")
+            if (nameValue$value[which(nameValue$name=="subset")]=="jeffVetted") {
+                subsetFlag=c("_jeffVetted_T5aT7Assays","_lungSmallJeffVettedHighGradeGI_T5aT7Assays")
+                samId03=samId03[which(clin3$disOntTerm3[samId03]=="lungSmall" | (clin3$grade[samId03]=="High" & clin3$disOntTerm3[samId03]=="combined"))]
+                samId=samId[which(clin1$id[samId]%in%clin3$id[samId03])]
+            }
+            samId01=samId
         }
-        samId01=samId
     }
     if (length(subsetFlag)==1) subsetFlag=rep(subsetFlag,2)
     if (F) {
@@ -189,7 +209,7 @@ for (nameValueFlag in nameValueList) {
     outFormat="png"
     outFormat="pdf"
     
-    source("code/funcs.R")
+    source(paste(dirSrc3,"funcs.R",sep=""))
     if (nameValue$value[which(nameValue$name=="subset")]%in%c("ucsf500","ucsf500Fmi")) {
         if (F) {
             x=datGPU[,which(clinU$testUCSF500orFMI=="UCSF500")]
@@ -198,11 +218,11 @@ for (nameValueFlag in nameValueList) {
             gene2=rownames(x)[apply(x,1,function(x) {mean(x,na.rm=T)!=0})]
             i=which(rownames(datGPU)%in%gene1[gene1%in%gene2])
         }
-        gene1=unique(clin1$gene[clin1$assayVersion=="T5a"])
-        gene2=unique(clin1$gene[clin1$assayVersion=="T7"])
-        j=1:nrow(clin3)
-        j=which(clin1$gene%in%gene1[gene1%in%gene2] & clin1$assayVersion%in%c("T5a","T7") & ((clin1$id%in%clin32$id[j]) | (!clin1$disOntTerm2%in%clin3$disOntTerm2[j])))
-        i=which(rownames(datGPU)%in%clin1$gene[j])
+        gene1=unique(clinF1$gene[clinF1$assayVersion=="T5a"])
+        gene2=unique(clinF1$gene[clinF1$assayVersion=="T7"])
+        j=1:nrow(clinF31)
+        j=which(clinF1$gene%in%gene1[gene1%in%gene2] & clinF1$assayVersion%in%c("T5a","T7") & ((clinF1$id%in%clinF32$id[j]) | (!clinF1$disOntTerm2%in%clinF31$disOntTerm2[j])))
+        i=which(rownames(datGPU)%in%clinF1$gene[j])
         if (nameValue$value[which(nameValue$name=="subset")]=="ucsf500") {
             #i=which(rownames(datGPU)%in%gene1)
             i=1:nrow(datGPU)
@@ -214,6 +234,12 @@ for (nameValueFlag in nameValueList) {
         clin3=clin3[j,]
         datGP=datGPU[i,j]
         #rm(datGP_m,candGene)
+        
+        tbl1=read.table("docs/ucsf500/gene/diff-v1-dropped.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
+        tbl2=read.table("docs/ucsf500/gene/diff-v2-added.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
+        tbl3=read.table("docs/ucsf500/gene/bad-genes.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
+        x=unique(c(tbl1[,1],tbl2[,1],tbl3[,1]))
+        datGP=datGP[which(!rownames(datGP)%in%x),]
     } else {
         gene1=unique(clin1$gene[clin1$assayVersion=="T5a"])
         gene2=unique(clin1$gene[clin1$assayVersion=="T7"])
@@ -324,9 +350,14 @@ for (nameValueFlag in nameValueList) {
     annColAll=annCol
     
     colListD=colList
-    x=sort(unique(annColAll$disOntTerm2))
+    k=which(names(annColAll)%in%c("disOntTerm2","primarySiteEB2"))[1]
+    x=sort(unique(annColAll[,k]))
+    colListD[which(x%in%c("lungSmall","lung"))]="blue"
     colListD[which(x=="pancreas")]="magenta"
-    colListD[which(x=="colon")]="purple"
+    colListD[which(x%in%c("colon","colorectal"))]="purple"
+    colListD[which(x=="otherGI")]="pink"
+    colListD[which(x=="other")]="lightcyan"
+    colListD[which(x=="unknown")]="gold"
     
     colListC=colList
     if (subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) {
@@ -694,8 +725,8 @@ for (nameValueFlag in nameValueList) {
     
     if (clusterFlag[1]=="_supervised") {
         #if (length(grep("percPatient",genesetList))!=0) geneBar="clusterPr"
-        geneBar="clusterPr"
         geneBar=""
+        geneBar="clusterPr"
         sampleBar=""
         sampleBar="cluster"
     } else if (clusterFlag[1]=="_comutated") {
@@ -841,30 +872,33 @@ for (nameValueFlag in nameValueList) {
                             }
                             varList=tolowerWords(sub("geneBy","",x[1]))
                             varList=varList[varList%in%names(annCol)]
-                            varList[which(varList=="disOntTerm3")]="disOntTerm2"
-                            varList[which(varList=="disease")]="disOntTerm2"
-                            if (!any(c("disease","disOntTerm","disOntTerm2","disOntTerm3")%in%varList)) varList=cbind(varList,"disOntTerm2")
-                            #if (subset2Flag%in%c("_pancreas","_colon","_pancColon","_other")) varList=c(varList,"cellSize")
-                            if (subset2Flag%in%c("_lungSmall","_pancreas","_colon","_pancColon","_other")) varList=c(varList,"cellSize","tmbLevel")
-                            #if (subset2Flag%in%c("_lungSmall","_pancreas","_colon","_pancColon","_other")) varList=c(varList,"cellSize")
-                            if (subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) varList=c("diffEB","ki67EB2","cellSizeEB")
-                            #if (subsetFlag[1]%in%c("_ucsf500")) varList=c("diffEB","ki67EB2","cellSize")
-                            if (!subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) {
+                            if (subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) {
+                                varList=c("primarySiteEB2","diffEB","ki67EB2","cellSizeEB")
+                                varName=unique(names(clin3))
+                            } else {
+                                varList[which(varList=="disOntTerm3")]="disOntTerm2"
+                                varList[which(varList=="disease")]="disOntTerm2"
+                                if (!any(c("disease","disOntTerm","disOntTerm2","disOntTerm3")%in%varList)) varList=cbind(varList,"disOntTerm2")
+                                #if (subset2Flag%in%c("_pancreas","_colon","_pancColon","_other")) varList=c(varList,"cellSize")
+                                if (subset2Flag%in%c("_lungSmall","_pancreas","_colon","_pancColon","_other")) varList=c(varList,"cellSize","tmbLevel")
+                                #if (subset2Flag%in%c("_lungSmall","_pancreas","_colon","_pancColon","_other")) varList=c(varList,"cellSize")
                                 if (exists("clin32")) {
                                     varName=unique(c(names(clin3),names(clin32)))
                                 } else {
                                     varName=unique(names(clin3))
                                 }
-                            } else {
-                                varName=unique(names(clin3))
                             }
                             varName=varName[match(varList,varName)]
                             k=which(varName%in%c("disease","disOntTerm","disOntTerm2","disOntTerm3"))
                             if (length(k)==1) {
                                 varName[k]="disease"
                             }
-                            k=match(c("fionaCol1","tmbLevel","ki67EB2"),varName); k2=which(!is.na(k)); k1=k[k2]
-                            varName[k1]=c("vetted","TMB","ki67EB")[k2]
+                            k=match(c("fionaCol1","tmbLevel","primarySiteEB2","ki67EB2"),varName); k2=which(!is.na(k)); k1=k[k2]
+                            varName[k1]=c("vetted","TMB","primarySiteEB","ki67EB")[k2]
+                            if (subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) {
+                                k=match(c("disease"),varName); k2=which(!is.na(k)); k1=k[k2]
+                                varName[k1]=c("primarySiteEB")[k2]
+                            }
                             varName=paste(varName," ",sep="")
                             varList[which(varList=="disease")]="disOntTerm2"
                             
@@ -1770,7 +1804,7 @@ for (nameValueFlag in nameValueList) {
                                 grp=annCol[,var2List[varId]]
                             } else {
                                 varId=1
-                                if (any(c("disease","disOntTerm","disOntTerm2","disOntTerm3")%in%varList[varId])) {
+                                if (any(c("disease","disOntTerm","disOntTerm2","disOntTerm3","primarySiteEB2")%in%varList[varId])) {
                                     grp=annCol[,varList[varId]]
                                 } else {
                                     grp=paste(annCol[,varList[varId]],annCol$disOntTerm2)
@@ -2095,7 +2129,7 @@ for (nameValueFlag in nameValueList) {
                                     x[x==""]=NA; x=as.integer(as.factor(x))
                                     grpUniq=sort(unique(x))
                                     x=x[match(annCol$id,annColAll$id)]
-                                    if (varList[varId]%in%c("disOntTerm2")) {
+                                    if (varList[varId]%in%c("disOntTerm2","primarySiteEB2")) {
                                         colCol[varId,]=colListD[x]
                                     } else if (varList[varId]%in%c("cellSize","cellSizeEB")) {
                                         colCol[varId,]=colListC[x]
@@ -2292,8 +2326,10 @@ for (nameValueFlag in nameValueList) {
                             #if (!is.na(nClust[2])) {
                             colId=names(annCol)[which(!names(annCol)%in%c("noteEB","ki67EB2","grp"))]
                             colId=cbind(colId,colId)
-                            if (subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) {
-                                colId[match(c("disOntTerm2"),colId[,1]),2]=c("primarySite")
+                            if (F) {
+                                if (subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) {
+                                    colId[match(c("disOntTerm2"),colId[,1]),2]=c("primarySite")
+                                }
                             }
                             fNameThis=paste(subDir,"clusterInfoSample",fNameOut,".txt",sep="")
                             x=paste("Sample cluster information for heatmap of samples from\n",heading,"\nSamples are ordered as in heatmap from left to right. See columns 'clustId' and 'order'",sep="")
@@ -2336,9 +2372,9 @@ for (nameValueFlag in nameValueList) {
                             }
                             write.table("",file=fNameThis,append=T,col.names=F,row.names=F,sep="\t",quote=F)
                             if (subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) {
-                                names(tbl)[match(c("disOntTerm2"),names(tbl))]=c("primarySite")
-                                varList2=c("sex","primarySite","diffEB","cellSizeEB","anyAlt")
+                                #names(tbl)[match(c("disOntTerm2"),names(tbl))]=c("primarySite")
                                 #varList2=c("sex","primarySite","diffEB","cellSize","anyAlt")
+                                varList2=c("primarySiteEB2","diffEB","cellSizeEB","anyAlt")
                             } else {
                                 #varList2=c("gender","grade","disOntTerm","disOntTerm2","assayVersion","anyAlt",sort(unique(tbl$altType)))
                                 #varList2=c("gender","disOntTerm2","assayVersion","anyAlt",sort(unique(tbl$altType)))
@@ -2463,7 +2499,7 @@ for (nameValueFlag in nameValueList) {
                                     lim=lim-1
                                     heatmapColorBar(limit=lim,cols=c(colColUniq[c(length(colColUniq),1,median(1:length(colColUniq)))]))
                                 } else {
-                                    if (varListAll[varId]=="disOntTerm2") {
+                                    if (varListAll[varId]%in%c("disOntTerm2","primarySiteEB2")) {
                                         #x=as.character(annColAll[samId03,varListAll[varId]]); x[x==""]=NA
                                         x=as.character(annColAll[,varListAll[varId]]); x[x==""]=NA
                                         x2=as.character(annCol[,varList[varId]]); x2[x2==""]=NA
@@ -2506,7 +2542,7 @@ for (nameValueFlag in nameValueList) {
                                     cexThis=NULL
                                     if (outFormat=="pdf" & (length(grpUniq)>15 | max(nchar(grpUniq))>20)) cexThis=1
                                     if (outFormat=="pdf") cexThis=1
-                                    if (varList[varId]%in%c("disOntTerm2")) {
+                                    if (varList[varId]%in%c("disOntTerm2","primarySiteEB2")) {
                                         sampleColorLegend(tls=ttl[k],col=colListD[k],legendTitle=varNameAll[varId],cex=cexThis)
                                     } else if (varList[varId]%in%c("cellSize","cellSizeEB")) {
                                         sampleColorLegend(tls=ttl[k],col=colListC[k],legendTitle=varNameAll[varId],cex=cexThis)

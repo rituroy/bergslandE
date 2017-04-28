@@ -13,6 +13,8 @@ if (computerFlag=="cluster") {
 } else {
     dirSrc="/Users/royr/UCSF/"
     dirSrc2=dirSrc
+    dirSrc3="code/"
+    dirSrc3="/Users/royr/Downloads/bergslandE-net_2015/"
     setwd(paste(dirSrc2,"EmilyBergsland",sep=""))
 }
 
@@ -88,8 +90,6 @@ for (nameValueFlag in nameValueList) {
         datadir="results/"
         load(paste(datadir,"tmp_ucsf500.RData",sep=""))
         nameValue=read.table("config.tmp",sep="=",h=F,quote="",comment.char="",as.is=T,fill=T,col.names=c("name","value"))
-        subset2List=paste("_",c("wellDiff_"),nameValue$value[which(nameValue$name=="subset")],sep="")
-        subset2List=paste("_",c("","poorDiff_","wellDiff_"),nameValue$value[which(nameValue$name=="subset")],sep="")
         subset2List=paste("_",c(""),nameValue$value[which(nameValue$name=="subset")],sep="")
         subset2List=paste("_",c("poorDiff_","wellDiff_"),nameValue$value[which(nameValue$name=="subset")],sep="")
     } else if (nameValue$value[which(nameValue$name=="subset")]=="fionaVettedUcsf500") {
@@ -110,9 +110,10 @@ for (nameValueFlag in nameValueList) {
         }
     }
     
-    source("code/funcs.R")
+    source(paste(dirSrc3,"funcs.R",sep=""))
     if (nameValue$value[which(nameValue$name=="subset")]%in%c("ucsf500","ucsf500Fmi")) {
         samSizeAll=50
+        samSizeAll=60
         if (F) {
             x=datGPU[,which(clinU$testUCSF500orFMI=="UCSF500")]
             gene1=rownames(x)[apply(x,1,function(x) {mean(x,na.rm=T)!=0})]
@@ -134,7 +135,12 @@ for (nameValueFlag in nameValueList) {
         }
         clinU=clinU[j,]
         datGP=datGPU[i,j]
-        #rm(datGP_m,candGene)
+        
+        tbl1=read.table("docs/ucsf500/gene/diff-v1-dropped.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
+        tbl2=read.table("docs/ucsf500/gene/diff-v2-added.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
+        tbl3=read.table("docs/ucsf500/gene/bad-genes.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
+        x=unique(c(tbl1[,1],tbl2[,1],tbl3[,1]))
+        datGP=datGP[which(!rownames(datGP)%in%x),]
     } else {
         gene1=unique(clin1$gene[clin1$assayVersion=="T5a"])
         gene2=unique(clin1$gene[clin1$assayVersion=="T7"])
