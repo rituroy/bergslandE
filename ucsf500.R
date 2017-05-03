@@ -207,4 +207,39 @@ for (varId in 1:length(varList)) {
     title("Kaplan-Meier Curves\nfor UCSF500 data")
 }
 dev.off()
+
+## -------------------------------------
+# Are CDKN2A & RB1 mutually exclusive?
+# Seen this in FMI data. Test in UCSF 500 data
+
+candGene=c("RB1","CDKN2A")
+i=which(rownames(datGPU)%in%candGene)
+j=which(clinU$testUCSF500orFMI%in%c("UCSF500"))
+dat=datGPU[i,j]
+
+for (i1 in 1:(nrow(dat)-1)) {
+    for (i2 in (i1+1):nrow(dat)) {
+        x=table(dat[i1,],dat[i2,],dnn=list(rownames(dat)[i1],rownames(dat)[i2]))
+        print(x)
+        print(fisher.test(x))
+    }
+}
+"
+    CDKN2A
+RB1  0  1
+0   29  5
+1    5  0
+
+Fisher's Exact Test for Count Data
+data:  x
+p-value = 1
+alternative hypothesis: true odds ratio is not equal to 1
+95 percent confidence interval:
+0.000000 8.559462
+sample estimates:
+odds ratio
+0
+"
+
+
 ## -------------------------------------
