@@ -60,8 +60,8 @@ nameValueList=c("allSamples","jeffVetted","fionaVetted")
 nameValueList=c("jeffVetted")
 nameValueList=c("allSamples")
 nameValueList=c("fionaVetted")
-nameValueList=c("ucsf500Fmi")
 nameValueList=c("ucsf500")
+nameValueList=c("ucsf500Fmi")
 for (nameValueFlag in nameValueList) {
     switch(nameValueFlag,
     "allSamples"={nameValue=data.frame(name="subset",value="allSamples")
@@ -205,6 +205,7 @@ for (nameValueFlag in nameValueList) {
     ordFlag=""
     ordFlag="_tmbSwiSnfEtc"
     ordFlag="_diffEBki67EB"
+    ordFlag="_priSiteEBki67EB"
     
     outFormat="png"
     outFormat="pdf"
@@ -725,8 +726,8 @@ for (nameValueFlag in nameValueList) {
     
     if (clusterFlag[1]=="_supervised") {
         #if (length(grep("percPatient",genesetList))!=0) geneBar="clusterPr"
-        geneBar=""
         geneBar="clusterPr"
+        geneBar=""
         sampleBar=""
         sampleBar="cluster"
     } else if (clusterFlag[1]=="_comutated") {
@@ -1793,6 +1794,10 @@ for (nameValueFlag in nameValueList) {
                             "_diffEBki67EB"={
                                 annCol$grp=10*annCol$ki67EB2; annCol$grp[which(annCol$ki67EB=="NR")]=2*max(annCol$grp,na.rm=T)
                                 annCol$grp=paste(annCol$diffEB,formatC(annCol$grp,width=nchar(as.character(max(annCol$grp))),flag="0"))
+                            },
+                            "_priSiteEBki67EB"={
+                                annCol$grp=10*annCol$ki67EB2; annCol$grp[which(annCol$ki67EB=="NR")]=2*max(annCol$grp,na.rm=T)
+                                annCol$grp=paste(annCol$primarySiteEB2,formatC(annCol$grp,width=nchar(as.character(max(annCol$grp))),flag="0"))
                             }
                             )
                             

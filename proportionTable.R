@@ -90,8 +90,9 @@ for (nameValueFlag in nameValueList) {
         datadir="results/"
         load(paste(datadir,"tmp_ucsf500.RData",sep=""))
         nameValue=read.table("config.tmp",sep="=",h=F,quote="",comment.char="",as.is=T,fill=T,col.names=c("name","value"))
-        subset2List=paste("_",c(""),nameValue$value[which(nameValue$name=="subset")],sep="")
         subset2List=paste("_",c("poorDiff_","wellDiff_"),nameValue$value[which(nameValue$name=="subset")],sep="")
+        subset2List=paste("_",c("primarySiteEB"),nameValue$value[which(nameValue$name=="subset")],sep="")
+        subset2List=paste("_",c(""),nameValue$value[which(nameValue$name=="subset")],sep="")
     } else if (nameValue$value[which(nameValue$name=="subset")]=="fionaVettedUcsf500") {
         load(paste(datadir,"tmp_allAssays.RData",sep=""))
         datadir="results/"
@@ -251,9 +252,9 @@ for (nameValueFlag in nameValueList) {
     genesetList=c("_swiSnfPlusHisModPlusAtmAtr")
     genesetList=c("_swiSnfEtc")
     genesetList=c("")
-    genesetList=c("_30topGene")
     genesetList=c("_30topGeneInUcsf500")
     genesetList=c("_30topGeneInUcsf500Fmi")
+    genesetList=c("_30topGene")
     
     for (genesetFlag in genesetList) {
         geneset2List=sub("_","",genesetFlag)
@@ -349,7 +350,14 @@ for (nameValueFlag in nameValueList) {
                     disUniq=cbind(c(""),c("All samples"))
                     varList=c("disease","diffEB","cellSizeEB")
                     varName=c("disease","diffEB","cellSizeEB")
+                    #varList=c("disease","primarySiteEB2","diffEB","cellSizeEB")
+                    #varName=c("disease","primarySiteEB","diffEB","cellSizeEB")
                 }
+                clinThis$primarySiteEB2=tolower(clinThis$primarySiteEB)
+                clinThis$primarySiteEB2[which(clinThis$primarySiteEB2=="other(lung)")]="lung"
+                clinThis$primarySiteEB2[grep("othergi(", clinThis$primarySiteEB2,fixed=T)]="otherGI"
+                clinThis$primarySiteEB2[grep("other(", clinThis$primarySiteEB2,fixed=T)]="other"
+                clinThis$primarySiteEB2[grep("unknown", clinThis$primarySiteEB2,fixed=T)]="unknown"
             } else {
                 gene1=unique(clin1$gene[clin1$assayVersion=="T5a"])
                 gene2=unique(clin1$gene[clin1$assayVersion=="T7"])
@@ -486,6 +494,9 @@ for (nameValueFlag in nameValueList) {
                                 grpUniq3=sub("_","",x[1])
                                 grpUniq3=cbind(grpUniq3,paste(ifelse(grpUniq3=="poor","Poorly","Well")," diff",sep=""),toupper(substr(grpUniq3,1,1)))
                             }
+                        },
+                        "primarySiteEB2"={grpUniq3=sort(unique(clinThis[,varList[varId]]))
+                            grpUniq3=cbind(grpUniq3,grpUniq3,toupper(substr(grpUniq3,1,1)))
                         },
                         "diffEB"={grpUniq3=c("poor","well","nr")
                             grpUniq3=cbind(grpUniq3,c("Poor","Well","NR"),toupper(substr(grpUniq3,1,1)))
