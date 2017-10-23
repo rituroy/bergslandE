@@ -19,6 +19,7 @@ if (computerFlag=="cluster") {
 datVerFlag="_20170306"
 datVerFlag="_20170331"
 datVerFlag="_20170623"
+datVerFlag="_20171019"
 
 fName1="_ucsf500"
 fName1=""
@@ -67,46 +68,93 @@ if (datVerFlag=="_20170306") {
     clinU=read.table("docs/ucsf500/Ritu_Final_HGN1_ImportTemplate_2017-06-24.csv",sep=",",h=T,quote="",comment.char="",as.is=T,fill=T)
     varInfo=data.frame(variable1=c("caseid","sex","status","dateofdiagnosis","survivalsincedx","agedx","ebprimarysite","metsites___0","metsites___1","metsites___2","metsites___3","pathreviewcenter","pathdate","ebdifferentiation","ebki67","eb_celltype","diagnosis_stage","grade","test","treatment_firstline___0","treatment_firstline___1","treatment_firstline___2","treatment_firstline___3","treatment_firstline___4","treatment_firstline___5","treatment_firstline___6","treatment_firstline___7","treatment_firstline___8","treatment_firstline___9","treatment_firstline___10","treatment_firstline___11","treatment_secondline___0","treatment_secondline___1","treatment_secondline___2","treatment_secondline___3","treatment_secondline___4","treatment_secondline___5","treatment_secondline___6","treatment_secondline___7","treatment_secondline___8","treatment_secondline___9","treatment_secondline___10","treatment_secondline___11","treatment_secondline___12","treatment_secondline___13","treatment_secondline___14","treatment_secondline___15","treatment_secondline___16","treatment_secondline___17","treatment_secondline___18","treatment_thirdline___0","treatment_thirdline___1","treatment_thirdline___2","treatment_thirdline___3","treatment_thirdline___4","treatment_thirdline___5","treatment_thirdline___6","treatment_thirdline___7","treatment_thirdline___8","treatment_thirdline___9","treatment_thirdline___10","tp53","rb1","crc_side","comments","variables_complete"),
         variable2=c("caseId","sex","status","dateDx","survSinceDx","ageDx","primarySiteEB","metsites0","metsites1","metsites2","metsites3","pathReviewCenter","pathDate","diffEB","ki67EB","cellSizeEB","stageAtDiag","grade","testUCSF500orFMI","treatFirstline0","treatFirstline1","treatFirstline2","treatFirstline3","treatFirstline4","treatFirstline5","treatFirstline6","treatFirstline7","treatFirstline8","treatFirstline9","treatFirstline10","treatFirstline11","treatSecondline0","treatSecondline1","treatSecondline2","treatSecondline3","treatSecondline4","treatSecondline5","treatSecondline6","treatSecondline7","treatSecondline8","treatSecondline9","treatSecondline10","treatSecondline11","treatSecondline12","treatSecondline13","treatSecondline14","treatSecondline15","treatSecondline16","treatSecondline17","treatSecondline18","treatThirdline0","treatThirdline1","treatThirdline2","treatThirdline3","treatThirdline4","treatThirdline5","treatThirdline6","treatThirdline7","treatThirdline8","treatThirdline9","treatThirdline10","TP53","RB1","crcSide","comments","variablesComplete"),stringsAsFactors=F)
+} else if (datVerFlag=="_20171019") {
+    ## Remove columns therapy types, no mutation comment, giving error when reading table
+    #clinU1=read.table("docs/ucsf500/RITU_HighGradeOutcomes_JW_10Oct2017_noTherapy_noMutNote_noMetSite.txt",sep="\t",h=T,quote="",comment.char="",as.is=T,fill=T)
+    clinU=read.table("docs/ucsf500/Ritu_HighGradeOutcomes_JW_19Oct2017_noTherapy_noMutNote_noMetSite_noNote.txt",sep="\t",h=T,quote="",comment.char="",as.is=T,fill=T)
+    varInfo=data.frame(variable1=c("Case.ID","Sex","DOB","Diagnosis.Date","Current.Patient.Status","Last.Contact.Date","Age.at.Diagnosis","Survival.since.Initial.Diagnosis..mo.","Primary.Site","Path.Review..UCSF.or.outside.","Date.of.Path.Used","Type.of.Path","EB.PRIMARY.SITE","EB.DIFFERENTIATION","EB.KI67","EB.MITOTIC.RATE","EB.CELL.TYPE","EB.COMMENTS","Stage.at.Diagnosis","Survival.since.Stage.IV..mo.","Differentiation","Large.Small.Cell","Grade","Mitotic.Rate","Ki67","Metastatic.Site.s.","Comments","Therapy.Types","Test..ucsf500.or.FMI.","Date.of.UCSF.Sample.Used","TP53","RB1","MEN1","ATRX","DAXX","ARID1A","MLL2","SETD2","APC","chromosomal.copy.change.Y.N","X.NO.mutations..deletions..rearrangement.","CDKN1B","CDKN2A","CDKN2B","CDKN2C","POT1","KRAS","MYCL1","SMAD4","CCNE1","RICTOR","FAM58A","MLH1","CTNNB1","ACVR2A","TGFBR2","PIK3CA","NRAS","POLE","FBXW7","PDPK1","TSC1","TSC2","MUTYH","USP9X","BRAF","SPTA1","ERCC2","BLM","PTCH1","SYNE1","NOTCH1","NOTCH2","KMT2D","ARID1A2","CIC","LRP1B","GNAQ","KIT","PRKDC","CCND1","CCND2","RBM10","CYLD","NFKBIE","SRSF2","MET","PPP2R1A","KDM5A","KDM6A","FGFR1","FGFR3","VHL","SMARCA4","X.CDK4..MDM2..FRS2.","NFE2L2","MYC","ERBB2","ERBB3","BCL2","FAT1","SOX9","BCOR","ATM","ERBB22","PTEN","BCORL1","CHD4","IDH1","CTCF","CTNNA1","MSH2","NOTCH3","SMAD3","TBX3","MYCN","BRCA2","FH","NBN","ARID2","AKT2","AXL","FGF19","FGF23","FGF3","FGF4","FGF6","AR","DNMT3A","AURKA","GNAS","ARFRP1","FLT3","LZTR1","MAP2K4","ZNF217","NF1","FANCA","RET","MCL1","BRCA1","EGFR","JAK3","TERT","FANCC","PTPRB","PTPRD","STK11","RNF43","PTPN11","BRIP1","CREBBP","AXIN2","MGA","PBRM1","SDHD","STAG2","HRAS","ASXL1","BRD4","FAM123B","Genetic.Mutations.Comments"),
+    variable2=c("caseId","sex","dob","dateDx","status","dateLastContact","ageDx","survSinceDx","primarySite","pathReviewCenter","pathDate","typeOfPath","primarySiteEB","diffEB","ki67EB","mitoticRateEB","cellSizeEB","noteEB","stageAtDiag","survSinceStageIV","diff","cellSize","grade","mitoticRate","ki67","Metastatic.Site.s.","note","therapyType","testUCSF500orFMI","dateOfUCSFsampleUsed","TP53","RB1","MEN1","ATRX","DAXX","ARID1A","MLL2","SETD2","APC","chromosomalCopyChange","noMutDelRearrange","CDKN1B","CDKN2A","CDKN2B","CDKN2C","POT1","KRAS","MYCL1","SMAD4","CCNE1","RICTOR","FAM58A","MLH1","CTNNB1","ACVR2A","TGFBR2","PIK3CA","NRAS","POLE","FBXW7","PDPK1","TSC1","TSC2","MUTYH","USP9X","BRAF","SPTA1","ERCC2","BLM","PTCH1","SYNE1","NOTCH1","NOTCH2","KMT2D","ARID1A2","CIC","LRP1B","GNAQ","KIT","PRKDC","CCND1","CCND2","RBM10","CYLD","NFKBIE","SRSF2","MET","PPP2R1A","KDM5A","KDM6A","FGFR1","FGFR3","VHL","SMARCA4","CDK4_MDM2_FRS2","NFE2L2","MYC","ERBB2","ERBB3","BCL2","FAT1","SOX9","BCOR","ATM","ERBB22","PTEN","BCORL1","CHD4","IDH1","CTCF","CTNNA1","MSH2","NOTCH3","SMAD3","TBX3","MYCN","BRCA2","FH","NBN","ARID2","AKT2","AXL","FGF19","FGF23","FGF3","FGF4","FGF6","AR","DNMT3A","AURKA","GNAS","ARFRP1","FLT3","LZTR1","MAP2K4","ZNF217","NF1","FANCA","RET","MCL1","BRCA1","EGFR","JAK3","TERT","FANCC","PTPRB","PTPRD","STK11","RNF43","PTPN11","BRIP1","CREBBP","AXIN2","MGA","PBRM1","SDHD","STAG2","HRAS","ASXL1","BRD4","FAM123B","noteMut"),stringsAsFactors=F)
 }
 
 k=match(varInfo[,1],names(clinU)); k1=which(!is.na(k)); k2=k[k1]
-names(clinU)[k1]=varInfo[,2]
+names(clinU)[k2]=varInfo[k1,2]
 
 clinU$id=1:nrow(clinU)
+if (!"caseId"%in%names(clinU)) clinU$caseId=paste("X",clinU$id,sep="")
 for (k in 1:ncol(clinU)) {
     if (is.character(clinU[,k])) {
         clinU[,k]=gsub("\"","",clinU[,k])
+        clinU[,k]=gsub("−","-",clinU[,k])
         clinU[,k]=gsub(" ","",clinU[,k])
         clinU[which(clinU[,k]%in%c("N.R.","NR")),k]="NR"
     }
 }
-clinU$diffEB=as.character(clinU$diffEB)
-clinU$diffEB[which(clinU$diffEB=="0")]="poor"
-clinU$diffEB[which(clinU$diffEB=="1")]="well"
-clinU$diffEB[which(clinU$diffEB=="2")]="nr"
-clinU$cellSizeEB=as.character(clinU$cellSizeEB)
-clinU$cellSizeEB[which(clinU$cellSizeEB=="0")]="small"
-clinU$cellSizeEB[which(clinU$cellSizeEB=="1")]="large"
-clinU$cellSizeEB[which(clinU$cellSizeEB=="2")]=NA
+k1=match(c("diff","cellSize","ki67","primarySite","mitoticRate"),names(clinU))
+k2=match(c("diffEB","cellSizeEB","ki67EB","primarySiteEB","mitoticRateEB"),names(clinU))
+for (k in 1:length(k1)) {
+    cat("\n\n============= ",names(clinU)[k1[k]],"\n")
+    #print(table(is.na(clinU[,k2[k]])))
+    #print(table(clinU[,k1[k]],exclude=NULL))
+    #print(table(clinU[,k2[k]],exclude=NULL))
+    #print(table(clinU[,k1[k]],clinU[,k2[k]],exclude=NULL))
+    #j=which(is.na(clinU[,k1[k]])!=is.na(clinU[,k2[k]]) | (clinU[,k1[k]]=="" & clinU[,k2[k]]!="") | (clinU[,k1[k]]!="" & clinU[,k2[k]]==""))
+    jj=63:nrow(clinU)
+    j=which(clinU[jj,k2[k]]=="")
+    #clinU[jj[j],k2[k]]=clinU[jj[j],k1[k]]
+    jj=1:nrow(clinU)
+    jj=63:nrow(clinU)
+    j=jj[which(clinU[jj,k2[k]]=="")]
+    #j=jj
+    if (length(j)!=0) print(table(notEB=clinU[j,k1[k]],EB=clinU[j,k2[k]],exclude=NULL))
+}
+colId=sort(names(clinU)[grep("diff|cellSize|ki67|grade|primarySite|testUCSF500orFMI",names(clinU))])
+colId=c("diffEB","cellSizeEB","ki67EB","grade","primarySiteEB","testUCSF500orFMI")
+for (k in colId) {
+    cat("\n\n============= ",k,"\n")
+    print(names(table(tolower(clinU[,k]),exclude=NULL)))
+}
+
+clinU$diffEB=tolower(as.character(clinU$diffEB))
+clinU$diffEB[which(clinU$diffEB%in%c("0","poorly-differentiated"))]="poor"
+clinU$diffEB[which(clinU$diffEB%in%c("1","well-differentiated"))]="well"
+clinU$diffEB[which(clinU$diffEB%in%c("2"))]="nr"
+clinU$diffEB[which(clinU$diffEB%in%c(""))]=NA
+clinU$cellSizeEB=tolower(as.character(clinU$cellSizeEB))
+clinU$cellSizeEB[which(clinU$cellSizeEB%in%c("0","smallcell"))]="small"
+clinU$cellSizeEB[which(clinU$cellSizeEB%in%c("1","largecell"))]="large"
 clinU$cellSizeEB[which(clinU$cellSizeEB=="3")]="nr"
-clinU$ki67EB=paste(clinU$ki67EB,"%",sep="")
-clinU$ki67EB[which(clinU$ki67EB=="NA%")]=NA
+clinU$cellSizeEB[which(clinU$cellSizeEB%in%c("2",""))]=NA
+clinU$ki67EB=tolower(as.character(clinU$ki67EB))
+clinU$ki67EB=paste(sub("%","",clinU$ki67EB),"%",sep="")
+clinU$ki67EB[which(clinU$ki67EB%in%c("NA%","%"))]=NA
+clinU$ki67EB[which(clinU$ki67EB%in%c("nr%"))]="NR"
+clinU$grade[which(clinU$grade=="3-Feb")]="2/3"
 clinU$grade=paste("grade",clinU$grade,sep="")
 clinU$grade[which(clinU$grade=="grade0")]="NR"
-clinU$grade[which(clinU$grade=="gradeNA")]=NA
+clinU$grade[which(clinU$grade%in%c("gradeNA","grade"))]=NA
 clinU$primarySiteEB=as.character(clinU$primarySiteEB)
-clinU$primarySiteEB[which(clinU$primarySiteEB=="0")]="COLORECTAL"
+clinU$primarySiteEB[which(clinU$primarySiteEB%in%c("OTHER(lung)"))]="LUNG"
+clinU$primarySiteEB=sapply(as.character(clinU$primarySiteEB),function(x) {
+    y=strsplit(strsplit(toupper(x),"(",fixed=T)[[1]][1],"-")[[1]][1]
+    y
+},USE.NAMES=F)
+clinU$primarySiteEB[which(clinU$primarySiteEB%in%c("0","COLON","ANUS"))]="COLORECTAL"
 clinU$primarySiteEB[which(clinU$primarySiteEB=="1")]="PANCREAS"
-clinU$primarySiteEB[which(clinU$primarySiteEB=="2")]="OTHER GI"
-clinU$primarySiteEB[which(clinU$primarySiteEB=="3")]="OTHER non-GI"
+clinU$primarySiteEB[which(clinU$primarySiteEB%in%c("2","OTHERGI","STOMACH"))]="OTHER GI"
+clinU$primarySiteEB[which(clinU$primarySiteEB%in%c("3","OTHER","BLADDER"))]="OTHER non-GI"
 clinU$primarySiteEB[which(clinU$primarySiteEB=="4")]="UNKNOWN"
 clinU$testUCSF500orFMI=as.character(clinU$testUCSF500orFMI)
 clinU$testUCSF500orFMI[which(clinU$testUCSF500orFMI=="0")]="UCSF500"
 clinU$testUCSF500orFMI[which(clinU$testUCSF500orFMI=="1")]="FMI"
 clinU$testUCSF500orFMI[which(clinU$testUCSF500orFMI=="2")]="Other"
 
-samId=c("HGO-031","HGO-028","HGO-107","HGO-023")
-clinU=clinU[which(!clinU$caseId%in%samId),]
+## Exclude lung cancer primaries
+samExclId=c("HGO-031","HGO-028","HGO-107","HGO-023")
+if (F) {
+    samId=c("HGO-031","HGO-028","HGO-107","HGO-023")
+    clinU[clinU$caseId%in%samId,c("caseId","primarySite","primarySiteEB")]
+    clinU=clinU[which(!clinU$caseId%in%samId),]
+}
 
 for (k in 1:ncol(clinU)) {
     if (is.character(clinU[,k])) {
@@ -123,6 +171,7 @@ for (k in 1:ncol(clinU)) {
 
 colId=which(names(clinU)%in%c("TP53","RB1","MEN1","ATRX","DAXX","ARID1A","MLL2","SETD2","APC","CDKN2A","CDKN2B","POT1","KRAS","MYCL1","SMAD4","CCNE1","RICTOR","FAM58A","MLH1","CTNNB1","ACVR2A","TGFbR2","PIK3CA","NRAS","POLE","FBXW7","PDPK1","TSC2","MUTYH","USP9X","BRAF","SPTA1","ERCC2","BLM","PTCH1","SYNE1","NOTCH2","KMT2D","ARID1A2","CIC","LRP1B","GNAQ","KIT","PRKDC","CCND1","CCND2","RBM10","CYLD","NFKBIE","SRSF2","MET","PPP2R1A","KDM6A","FGFR1","VHL","SMARCA4","CDK4_MDM2_FRS2","NFE2L2","MYC","ERBB3","BCL2","FAT1","SOX9","BCOR","ATM","ERBB2","PTEN","BCORL1","CHD4","CTCF","CTNNA1","MSH2","NOTCH3","SMAD3","TBX3"))
 colId=which(names(clinU)%in%c("TP53","RB1","MEN1","ATRX","DAXX","ARID1A","MLL2","SETD2","APC","CDKN1B","CDKN2A","CDKN2B","CDKN2C","POT1","KRAS","MYCL1","SMAD4","CCNE1","RICTOR","FAM58A","MLH1","CTNNB1","ACVR2A","TGFBR2","PIK3CA","NRAS","POLE","FBXW7","PDPK1","TSC1","TSC2","MUTYH","USP9X","BRAF","SPTA1","ERCC2","BLM","PTCH1","SYNE1","NOTCH1","NOTCH2","KMT2D","ARID1A2","CIC","LRP1B","GNAQ","KIT","PRKDC","CCND1","CCND2","RBM10","CYLD","NFKBIE","SRSF2","MET","PPP2R1A","KDM5A","KDM6A","FGFR1","FGFR3","VHL","SMARCA4","CDK4_MDM2_FRS2","NFE2L2","MYC","ERBB2","ERBB3","BCL2","FAT1","SOX9","BCOR","ATM","ERBB22","PTEN","BCORL1","CHD4","IDH1","CTCF","CTNNA1","MSH2","NOTCH3","SMAD3","TBX3","MYCN","BRCA2","FH","NBN","ARID2","AKT2","AXL","FGF19","FGF23","FGF3","FGF4","FGF6","AR","DNMT3A","AURKA","GNAS","ARFRP1","FLT3","LZTR1","MAP2K4","ZNF217","NF1","FANCA","RET","MCL1","BRCA1","EGFR","JAK3","TERT","FANCC","PTPRD","STK11","RNF43","BRIP1","BRIP2","PTPN11"))
+colId=which(names(clinU)%in%c("TP53","RB1","MEN1","ATRX","DAXX","ARID1A","MLL2","SETD2","APC","CDKN1B","CDKN2A","CDKN2B","CDKN2C","POT1","KRAS","MYCL1","SMAD4","CCNE1","RICTOR","FAM58A","MLH1","CTNNB1","ACVR2A","TGFBR2","PIK3CA","NRAS","POLE","FBXW7","PDPK1","TSC1","TSC2","MUTYH","USP9X","BRAF","SPTA1","ERCC2","BLM","PTCH1","SYNE1","NOTCH1","NOTCH2","KMT2D","ARID1A2","CIC","LRP1B","GNAQ","KIT","PRKDC","CCND1","CCND2","RBM10","CYLD","NFKBIE","SRSF2","MET","PPP2R1A","KDM5A","KDM6A","FGFR1","FGFR3","VHL","SMARCA4","CDK4_MDM2_FRS2","NFE2L2","MYC","ERBB2","ERBB3","BCL2","FAT1","SOX9","BCOR","ATM","ERBB22","PTEN","BCORL1","CHD4","IDH1","CTCF","CTNNA1","MSH2","NOTCH3","SMAD3","TBX3","MYCN","BRCA2","FH","NBN","ARID2","AKT2","AXL","FGF19","FGF23","FGF3","FGF4","FGF6","AR","DNMT3A","AURKA","GNAS","ARFRP1","FLT3","LZTR1","MAP2K4","ZNF217","NF1","FANCA","RET","MCL1","BRCA1","EGFR","JAK3","TERT","FANCC","PTPRB","PTPRD","STK11","RNF43","PTPN11","BRIP1","CREBBP","AXIN2","MGA","PBRM1","SDHD","STAG2","HRAS","ASXL1","BRD4","FAM123B"))
 kk=c()
 for (k in colId) {
     x=mean(is.na(clinU[,k]))
@@ -166,7 +215,7 @@ for (k in colId) {
 res=apply(datGPU,1,function(x) mean(x==1,na.rm=T))
 res=apply(datGPU,1,function(x) sum(x==1,na.rm=T))
 
-save(clinU,datGPU,fName1,file="tmp_ucsf500.RData")
+save(clinU,datGPU,samExclId,fName1,file="tmp_ucsf500.RData")
 
 ## -------------------------------------
 library(coin)

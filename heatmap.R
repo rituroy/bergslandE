@@ -60,8 +60,8 @@ nameValueList=c("allSamples","jeffVetted","fionaVetted")
 nameValueList=c("jeffVetted")
 nameValueList=c("allSamples")
 nameValueList=c("fionaVetted")
-nameValueList=c("ucsf500")
 nameValueList=c("ucsf500Fmi")
+nameValueList=c("ucsf500")
 for (nameValueFlag in nameValueList) {
     switch(nameValueFlag,
     "allSamples"={nameValue=data.frame(name="subset",value="allSamples")
@@ -90,13 +90,16 @@ for (nameValueFlag in nameValueList) {
         datadir="results/"
         load(paste(datadir,"tmp_ucsf500.RData",sep=""))
         nameValue=read.table("config.tmp",sep="=",h=F,quote="",comment.char="",as.is=T,fill=T,col.names=c("name","value"))
-        colId2=unique(c(colId2,c("currPatStatus","ageAtDiag","survSinceInitDiag","pathReview","typeOfPath","stageAtDiag","survSinceStageIV","diff","cellSize","grade","mitoticRate","ki67","note","testUCSF500orFMI","dateOfUCSFsampleUsed","chromosomalCopyChange","noMutDelRearrange","dead")))
+        #colId2=unique(c(colId2,c("currPatStatus","ageAtDiag","survSinceInitDiag","pathReview","typeOfPath","stageAtDiag","survSinceStageIV","diff","cellSize","grade","mitoticRate","ki67","note","testUCSF500orFMI","dateOfUCSFsampleUsed","chromosomalCopyChange","noMutDelRearrange","dead")))
+        colId2=unique(c(colId2,c("currPatStatus","ageAtDiag","survSinceInitDiag","pathReview","typeOfPath","stageAtDiag","survSinceStageIV","diff","cellSize","mitoticRate","ki67","note","testUCSF500orFMI","dateOfUCSFsampleUsed","chromosomalCopyChange","noMutDelRearrange","dead")))
         clin3=clinU
         #names(clin3)[match(c("primarySite"),names(clin3))]="disOntTerm2"
         clin3$primarySiteEB2=tolower(clin3$primarySiteEB)
         clin3$primarySiteEB2[which(clin3$primarySiteEB2=="other(lung)")]="lung"
         clin3$primarySiteEB2[grep("othergi(", clin3$primarySiteEB2,fixed=T)]="otherGI"
+        clin3$primarySiteEB2[which(clin3$primarySiteEB2=="other gi")]="otherGI"
         clin3$primarySiteEB2[grep("other(", clin3$primarySiteEB2,fixed=T)]="other"
+        clin3$primarySiteEB2[which(clin3$primarySiteEB2=="other non-gi")]="other"
         clin3$primarySiteEB2[grep("unknown", clin3$primarySiteEB2,fixed=T)]="unknown"
         #clin3$disOntTerm2=clin3$primarySiteEB2
         if (T) {
@@ -141,7 +144,9 @@ for (nameValueFlag in nameValueList) {
         clin3$primarySiteEB2=tolower(clin3$primarySiteEB)
         clin3$primarySiteEB2[which(clin3$primarySiteEB2=="other(lung)")]="lung"
         clin3$primarySiteEB2[grep("othergi(", clin3$primarySiteEB2,fixed=T)]="otherGI"
+        clin3$primarySiteEB2[which(clin3$primarySiteEB2=="other gi")]="otherGI"
         clin3$primarySiteEB2[grep("other(", clin3$primarySiteEB2,fixed=T)]="other"
+        clin3$primarySiteEB2[which(clin3$primarySiteEB2=="other non-gi")]="other"
         clin3$primarySiteEB2[grep("unknown", clin3$primarySiteEB2,fixed=T)]="unknown"
         #clin3$disOntTerm2=clin3$primarySiteEB2
         if (F) {
@@ -201,8 +206,11 @@ for (nameValueFlag in nameValueList) {
     datTypeFlag=c("_fracRead","")
     datTypeFlag=c("","")
     
-    ordFlag="_swiSnfEtc"
+    subset1Flag="_withLung"
+    subset1Flag=""
+    
     ordFlag=""
+    ordFlag="_swiSnfEtc"
     ordFlag="_tmbSwiSnfEtc"
     ordFlag="_diffEBki67EB"
     ordFlag="_priSiteEBki67EB"
@@ -235,7 +243,12 @@ for (nameValueFlag in nameValueList) {
         clin3=clin3[j,]
         datGP=datGPU[i,j]
         #rm(datGP_m,candGene)
-        
+        if (subset1Flag=="") {
+            j=which(!clinU$caseId%in%samExclId)
+            clinU=clinU[j,]
+            clin3=clin3[j,]
+            datGP=datGP[,j]
+        }
         tbl1=read.table("docs/ucsf500/gene/diff-v1-dropped.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
         tbl2=read.table("docs/ucsf500/gene/diff-v2-added.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
         tbl3=read.table("docs/ucsf500/gene/bad-genes.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
@@ -256,17 +269,25 @@ for (nameValueFlag in nameValueList) {
         out=getFamilyLevelInfo()
         datGP_m=out$datGP_m
         candGene=out$candGene
+        if (subset1Flag=="") {
+            j=which(!clinU$caseId%in%samExclId)
+            clinU=clinU[j,]
+            clin3=clin3[j,]
+            datGP=datGP[,j]
+            datGP_m=datGP_m[,j]
+        }
     }
-    
     
     library(marray)
     #source(paste(dirSrc,"functions/heatmap.5.R",sep=""))
     #source(paste(dirSrc,"functions/heatmapAcgh.7.R",sep=""))
     #source(paste(dirSrc,"functions/heatmap.5.4.R",sep=""))
     #source(paste(dirSrc,"functions/heatmapAcgh.7.1.R",sep=""))
-    source(paste(dirSrc,"functions/heatmapAcgh.7.2.R",sep=""))
+    #source(paste(dirSrc,"functions/heatmapAcgh.7.2.R",sep=""))
+    source(paste(dirSrc,"functions/heatmapAcgh.7.3.R",sep=""))
     #source(paste("heatmap.5.5.R",sep=""))
-    source(paste(dirSrc,"functions/heatmap.5.5.R",sep=""))
+    #source(paste(dirSrc,"functions/heatmap.5.5.R",sep=""))
+    source(paste(dirSrc,"functions/heatmap.5.6.R",sep=""))
     
     datadir2="results/"
     
@@ -277,7 +298,8 @@ for (nameValueFlag in nameValueList) {
     colId2="etoeprt"
     colId2=c("gene","partnerGene","altType","cdsEffect","proteinEffect","cn","fracReads")
     if (subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) {
-        colId2=unique(c(colId2,c("currPatStatus","ageAtDiag","survSinceInitDiag","pathReview","typeOfPath","stageAtDiag","survSinceStageIV","diff","cellSize","grade","mitoticRate","ki67","note","testUCSF500orFMI","dateOfUCSFsampleUsed","chromosomalCopyChange","noMutDelRearrange","dead")))
+        #colId2=unique(c(colId2,c("currPatStatus","ageAtDiag","survSinceInitDiag","pathReview","typeOfPath","stageAtDiag","survSinceStageIV","diff","cellSize","grade","mitoticRate","ki67","note","testUCSF500orFMI","dateOfUCSFsampleUsed","chromosomalCopyChange","noMutDelRearrange","dead")))
+        colId2=unique(c(colId2,c("currPatStatus","ageAtDiag","survSinceInitDiag","pathReview","typeOfPath","stageAtDiag","survSinceStageIV","diff","cellSize","mitoticRate","ki67","note","testUCSF500orFMI","dateOfUCSFsampleUsed","chromosomalCopyChange","noMutDelRearrange","dead")))
     }
     
     if (datTypeFlag[1]=="_fracRead" | nameValue$value[which(nameValue$name=="subset")]%in%c("ucsf500","ucsf500Fmi","fionaVettedUcsf500")) {
@@ -356,9 +378,11 @@ for (nameValueFlag in nameValueList) {
     colListD[which(x%in%c("lungSmall","lung"))]="blue"
     colListD[which(x=="pancreas")]="magenta"
     colListD[which(x%in%c("colon","colorectal"))]="purple"
-    colListD[which(x=="otherGI")]="pink"
-    colListD[which(x=="other")]="lightcyan"
+    colListD[which(x%in%c("otherGI","other gi"))]="pink"
+    colListD[which(x%in%c("other","other non-gi"))]="lightcyan"
     colListD[which(x=="unknown")]="gold"
+    cat("x: ",x,"\n")
+    cat("colListD: ",colListD,"\n")
     
     colListC=colList
     if (subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) {
@@ -385,6 +409,13 @@ for (nameValueFlag in nameValueList) {
     }
     
     colListDi=c("grey","skyblue","blue")
+    x=annColAll$diffEB
+    x=sort(unique(x))
+    colListDi[which(x=="poor")]="skyblue"
+    colListDi[which(x=="well")]="blue"
+    colListDi[which(x=="NR")]="grey"
+    
+    colListGr=c("yellow","orange","darkorange1","darkorange3")
     
     colListGene=grey((0:4)/4)
     colListGene=grey((0:3)/3)
@@ -604,7 +635,7 @@ for (nameValueFlag in nameValueList) {
         }
         
         fName1=""
-        datadirG=paste("results/ucsf500/",sub("_","",subsetFlag[1]),"/geneSampleId/",sep="")
+        datadirG=paste("results/ucsf500/",ifelse(subset1Flag=="_withLung","withLung","noLung"),"/",sub("_","",subsetFlag[1]),"/geneSampleId/",sep="")
         genesetList=dir(datadirG,pattern="geneSampleId_geneByDisease"); genesetList=genesetList[grep(tolower(nameValue$value[which(nameValue$name=="subset")]),tolower(genesetList))]; genesetList=sub(".RData","",sub("geneSampleId_","",genesetList),fixed=T)
         subset2Flag=c("")
         subset3Flag[1]=""
@@ -649,14 +680,14 @@ for (nameValueFlag in nameValueList) {
         subset4Flag=c(subset4Flag,"")
         subsetFFlag="_men1"
         subsetFFlag=""
-        load(file=paste(datadirG,"geneList.RData",sep=""))
+        load(file=paste(datadirG,"geneList",subset1Flag,".RData",sep=""))
         
         geneFamilyFlag=T
         geneFamilyFlag=F
         
         datadirG=paste("results/swiSnf_modifier/comutation/",ifelse(geneFamilyFlag,"componentLevel","geneLevel"),"/",sep="")
         geneset2Flag="_swiSnfEtc"
-        load(file=paste(datadirG,"geneList",geneset2Flag,subsetFlag[2],".RData",sep=""))
+        load(file=paste(datadirG,"geneList",geneset2Flag,subsetFlag[2],subset1Flag,".RData",sep=""))
         
         genesetList=names(geneList)
         genesetList=genesetList[which(genesetList==paste("_",sep=""))]
@@ -696,7 +727,7 @@ for (nameValueFlag in nameValueList) {
         }
         subsetFFlag="_men1"
         subsetFFlag=""
-        load(file=paste(datadirG,"geneList.RData",sep=""))
+        load(file=paste(datadirG,"geneList",subset1Flag,".RData",sep=""))
         
         geneFamilyFlag=F
         geneFamilyFlag=T
@@ -707,7 +738,7 @@ for (nameValueFlag in nameValueList) {
         geneset2Flag="_swiSnfCompEtc"
         geneset2Flag="_swiSnfEtc"
         geneset2Flag="_swiSnfHisModAtmAtr"
-        load(file=paste(datadirG,"geneList",geneset2Flag,subsetFlag[2],".RData",sep=""))
+        load(file=paste(datadirG,"geneList",geneset2Flag,subsetFlag[2],subset1Flag,".RData",sep=""))
         
         genesetList=names(geneList)
         geneset2List=geneset2Flag
@@ -715,6 +746,10 @@ for (nameValueFlag in nameValueList) {
         testFlag="cosine"
         testFlag="fisher"
         colHMCon=list("darkred","indianred","red")
+    }
+    if (subset1Flag=="_withLung") {
+        fName1=paste(fName1,subset1Flag,sep="")
+        heading1=sub(":"," with lung:",heading1)
     }
     subset2List=c("_lungSmall","_pancreas","_colon","_other")
     subset2List=subset2Flag
@@ -874,7 +909,7 @@ for (nameValueFlag in nameValueList) {
                             varList=tolowerWords(sub("geneBy","",x[1]))
                             varList=varList[varList%in%names(annCol)]
                             if (subsetFlag[1]%in%c("_ucsf500","_ucsf500Fmi")) {
-                                varList=c("primarySiteEB2","diffEB","ki67EB2","cellSizeEB")
+                                varList=c("primarySiteEB2","diffEB","ki67EB2","cellSizeEB","grade")
                                 varName=unique(names(clin3))
                             } else {
                                 varList[which(varList=="disOntTerm3")]="disOntTerm2"
@@ -1793,11 +1828,11 @@ for (nameValueFlag in nameValueList) {
                             },
                             "_diffEBki67EB"={
                                 annCol$grp=10*annCol$ki67EB2; annCol$grp[which(annCol$ki67EB=="NR")]=2*max(annCol$grp,na.rm=T)
-                                annCol$grp=paste(annCol$diffEB,formatC(annCol$grp,width=nchar(as.character(max(annCol$grp))),flag="0"))
+                                annCol$grp=paste(annCol$diffEB,formatC(annCol$grp,width=nchar(as.character(max(annCol$grp,na.rm=T))),flag="0"))
                             },
                             "_priSiteEBki67EB"={
                                 annCol$grp=10*annCol$ki67EB2; annCol$grp[which(annCol$ki67EB=="NR")]=2*max(annCol$grp,na.rm=T)
-                                annCol$grp=paste(annCol$primarySiteEB2,formatC(annCol$grp,width=nchar(as.character(max(annCol$grp))),flag="0"))
+                                annCol$grp=paste(annCol$primarySiteEB2,formatC(annCol$grp,width=nchar(as.character(max(annCol$grp,na.rm=T))),flag="0"))
                             }
                             )
                             
@@ -2140,6 +2175,8 @@ for (nameValueFlag in nameValueList) {
                                         colCol[varId,]=colListC[x]
                                     } else if (varList[varId]%in%c("diffEB")) {
                                         colCol[varId,]=colListDi[x]
+                                    } else if (varList[varId]%in%c("grade")) {
+                                        colCol[varId,]=colListGr[x]
                                     } else if (varList[varId]%in%c("tmbLevel")) {
                                         colCol[varId,]=colListT[x]
                                     } else {
@@ -2553,6 +2590,8 @@ for (nameValueFlag in nameValueList) {
                                         sampleColorLegend(tls=ttl[k],col=colListC[k],legendTitle=varNameAll[varId],cex=cexThis)
                                     } else if (varList[varId]%in%c("diffEB")) {
                                         sampleColorLegend(tls=ttl[k],col=colListDi[k],legendTitle=varNameAll[varId],cex=cexThis)
+                                    } else if (varList[varId]%in%c("grade")) {
+                                        sampleColorLegend(tls=ttl[k],col=colListGr[k],legendTitle=varNameAll[varId],cex=cexThis)
                                     } else if (varList[varId]%in%c("tmbLevel")) {
                                         sampleColorLegend(tls=ttl[k],col=colListT[k],legendTitle=varNameAll[varId],cex=cexThis)
                                     } else {

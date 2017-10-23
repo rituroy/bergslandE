@@ -90,8 +90,10 @@ for (nameValueFlag in nameValueList) {
         datadir="results/"
         load(paste(datadir,"tmp_ucsf500.RData",sep=""))
         nameValue=read.table("config.tmp",sep="=",h=F,quote="",comment.char="",as.is=T,fill=T,col.names=c("name","value"))
-        subset2List=paste("_",c("poorDiff_","wellDiff_"),nameValue$value[which(nameValue$name=="subset")],sep="")
         subset2List=paste("_",c("primarySiteEB"),nameValue$value[which(nameValue$name=="subset")],sep="")
+        # For genesetList = _30topGeneInUcsf500, _30topGeneInUcsf500Fmi
+        subset2List=paste("_",c("poorDiff_","wellDiff_"),nameValue$value[which(nameValue$name=="subset")],sep="")
+        # For genesetList = _30topGene
         subset2List=paste("_",c(""),nameValue$value[which(nameValue$name=="subset")],sep="")
     } else if (nameValue$value[which(nameValue$name=="subset")]=="fionaVettedUcsf500") {
         load(paste(datadir,"tmp_allAssays.RData",sep=""))
@@ -136,6 +138,7 @@ for (nameValueFlag in nameValueList) {
         }
         clinU=clinU[j,]
         datGP=datGPU[i,j]
+        samSizeAll=ceiling(nrow(clinU)/10)*10
         
         tbl1=read.table("docs/ucsf500/gene/diff-v1-dropped.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
         tbl2=read.table("docs/ucsf500/gene/diff-v2-added.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
@@ -237,6 +240,9 @@ for (nameValueFlag in nameValueList) {
     if (nameValue$value[which(nameValue$name=="subset")]%in%c("ucsf500","ucsf500Fmi")) {
         samSize=c(0,0)
     }
+    
+    subset1Flag="_withLung"
+    subset1Flag=""
     
     ## All genesets
     #genesetList=c("_swiSnfComp","_histoneMod","_swiSnfHisMod","_swiSnfPlusHisMod","_atmAtr","_rbEtc","_swiSnfEtc")
@@ -343,6 +349,10 @@ for (nameValueFlag in nameValueList) {
                         varList=c(varList,"cellSizeEB")
                     }
                     varName=varList
+                    if (any(!is.na(clinThis$grade))) {
+                        varList=c(varList,"gradeThis")
+                        varName=c(varName,"grade")
+                    }
                 } else {
                     heading1=paste(heading1,": All samples",sep="")
                     clinThis=clinU
@@ -352,12 +362,16 @@ for (nameValueFlag in nameValueList) {
                     varName=c("disease","diffEB","cellSizeEB")
                     #varList=c("disease","primarySiteEB2","diffEB","cellSizeEB")
                     #varName=c("disease","primarySiteEB","diffEB","cellSizeEB")
+                    varList=c("disease","primarySiteEB2","diffEB","cellSizeEB","gradeThis")
+                    varName=c("disease","primarySiteEB","diffEB","cellSizeEB","grade")
                 }
                 clinThis$primarySiteEB2=tolower(clinThis$primarySiteEB)
                 clinThis$primarySiteEB2[which(clinThis$primarySiteEB2=="other(lung)")]="lung"
                 clinThis$primarySiteEB2[grep("othergi(", clinThis$primarySiteEB2,fixed=T)]="otherGI"
                 clinThis$primarySiteEB2[grep("other(", clinThis$primarySiteEB2,fixed=T)]="other"
                 clinThis$primarySiteEB2[grep("unknown", clinThis$primarySiteEB2,fixed=T)]="unknown"
+                clinThis$gradeThis=clinThis$grade
+                clinThis$gradeThis[which(clinThis$grade=="grade2/3")]="gradeT"
             } else {
                 gene1=unique(clin1$gene[clin1$assayVersion=="T5a"])
                 gene2=unique(clin1$gene[clin1$assayVersion=="T7"])
@@ -481,6 +495,9 @@ for (nameValueFlag in nameValueList) {
                         samIdAll=which(clinThis$disOntTerm2==disUniq[dId,1])
                     }
                 }
+                if (subset1Flag=="") {
+                    samIdAll=samIdAll[!clinThis$caseId[samIdAll]%in%samExclId]
+                }
                 for (varId in 1:length(varList)) {
                     cat("\n\n================ variable: ",varList[varId],"\n\n",sep="")
                     if (length(grep("_ucsf500",subset2Flag))==1) {
@@ -495,7 +512,9 @@ for (nameValueFlag in nameValueList) {
                                 grpUniq3=cbind(grpUniq3,paste(ifelse(grpUniq3=="poor","Poorly","Well")," diff",sep=""),toupper(substr(grpUniq3,1,1)))
                             }
                         },
-                        "primarySiteEB2"={grpUniq3=sort(unique(clinThis[,varList[varId]]))
+                        "primarySiteEB2"={
+                            grpUniq3=sort(unique(clinThis[,varList[varId]]))
+                            grpUniq3=c("colorectal","other gi","other non-gi","pancreas","unknown")
                             grpUniq3=cbind(grpUniq3,grpUniq3,toupper(substr(grpUniq3,1,1)))
                         },
                         "diffEB"={grpUniq3=c("poor","well","nr")
@@ -503,6 +522,11 @@ for (nameValueFlag in nameValueList) {
                         },
                         "cellSizeEB"={grpUniq3=c("small","large","nr")
                             grpUniq3=cbind(grpUniq3,c("Small","Large","NR"),toupper(substr(grpUniq3,1,1)))
+                        },
+                        "gradeThis"={
+                            #grpUniq3=paste("grade",c("2","3"),sep="")
+                            grpUniq3=paste("grade",c("1","2","T","3"),sep="")
+                            grpUniq3=cbind(grpUniq3,paste("grade",c("1","2","2/3","3"),sep=""),c("1","2","T","3"))
                         }
                         )
                     } else {
@@ -708,11 +732,14 @@ for (nameValueFlag in nameValueList) {
                             }
                         } else if (length(grep("patient",geneset2Flag))==1) {
                             numThres=as.integer(strsplit(geneset2Flag,"patient")[[1]][1])
-                            j=1:nrow(clinThis)
+                            #j=1:nrow(clinThis)
+                            j=1:nrow(clinThis[samIdThis,])
                             x2=strsplit(geneset2Flag,"patientIn")[[1]]
                             if (length(x2)==2) {
-                                j=which(tolower(clinThis$disOntTerm2)==tolower(x2[2]))
-                                nm=clinThis$disease[j][1]
+                                #j=which(tolower(clinThis$disOntTerm2)==tolower(x2[2]))
+                                #nm=clinThis$disease[j][1]
+                                j=which(tolower(clinThis$disOntTerm2[samIdThis])==tolower(x2[2]))
+                                nm=clinThis$disease[samIdThis][j][1]
                             }
                             x=apply(out4Alt[,j],1,function(x) {sum(x!=0,na.rm=T)})
                             i=order(x,decreasing=T)
@@ -722,7 +749,7 @@ for (nameValueFlag in nameValueList) {
                             heading=paste(heading,"Table of ",length(i)," genes with >= ",numThres," patients with alterations",ifelse(length(x2)==2,paste(" in ",nm,sep=""),""),sep="")
                         } else if (length(grep("topGeneIn",geneset2Flag))==1) {
                             fName2=strsplit(genesetFlag,"In")[[1]]; fName2=paste(fName2[1],"_",tolowerWords(fName2[2]),sep="")
-                            fName2=paste("geneSampleId_geneBy",capWords(varList[varId]),fName2,".RData",sep="")
+                            fName2=paste("geneSampleId_geneBy",capWords(varList[varId]),fName2,subset1Flag,".RData",sep="")
                             load(paste(datadirG,fName2,sep=""))
                             x2=strsplit(geneset2Flag,"topGeneIn")[[1]]
                             i=match(geneId,rownames(outPropAll))
@@ -731,11 +758,14 @@ for (nameValueFlag in nameValueList) {
                         } else if (length(grep("topGene",geneset2Flag))==1) {
                             #numThres=as.integer(sub("topGene","",geneset2Flag))
                             numThres=as.integer(strsplit(geneset2Flag,"topGene")[[1]][1])
-                            j=1:nrow(clinThis)
+                            #j=1:nrow(clinThis)
+                            j=1:nrow(clinThis[samIdThis,])
                             x2=strsplit(geneset2Flag,"topGeneIn")[[1]]
                             if (length(x2)==2) {
-                                j=which(tolower(clinThis$disOntTerm2)==tolower(x2[2]))
-                                nm=clinThis$disease[j][1]
+                                #j=which(tolower(clinThis$disOntTerm2)==tolower(x2[2]))
+                                #nm=clinThis$disease[j][1]
+                                j=which(tolower(clinThis$disOntTerm2[samIdThis])==tolower(x2[2]))
+                                nm=clinThis$disease[samIdThis][j][1]
                             }
                             x=apply(out4Alt[,j],1,function(x) {sum(x!=0,na.rm=T)})
                             i=order(x,decreasing=T)[1:numThres]
@@ -756,6 +786,10 @@ for (nameValueFlag in nameValueList) {
                             fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),ifelse(geneset2Flag=="","","_"),geneset2Flag,fName1,subset2Flag,".txt",sep="")
                             heading=paste(heading,"Table of ",length(i)," genes with any alteration",ifelse(disUniq[dId,1]=="","",paste(" in a group within ",disUniq[dId,2],sep="")),sep="")
                             
+                        }
+                        if (subset1Flag=="_withLung") {
+                            fName=sub(".txt",paste(subset1Flag,".txt",sep=""),fName,fixed=T)
+                            heading=sub(":"," with lung:",heading)
                         }
                         if (length(i)!=0) {
                             colListThis=colList
@@ -827,7 +861,8 @@ for (nameValueFlag in nameValueList) {
                                 nm=sub("+otherGI","",nm,fixed=T)
                             }
                             write.table(heading,file=fName,append=F,col.names=F,row.names=F,sep="\t",quote=F)
-                            write.table(paste("N = ",sum(x),sep=""),file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
+                            #write.table(paste("N = ",sum(x),sep=""),file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
+                            write.table(paste(ifelse(varList[varId]=="gradeThis" & "gradeT"%in%grpUniq3[,1],"T = grade 2/3, ",""),"N = ",sum(x),sep=""),file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
                             write.table("",file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
                             write.table(nm,file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
                             write.table(tbl,file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
@@ -913,7 +948,8 @@ for (nameValueFlag in nameValueList) {
                             fName2=sub("proportionTable_","geneSampleId_",sub(".txt","",fName,fixed=T))
                             geneId=rownames(outPropThis)
                             sampleId=as.integer(sapply(colnames(outAnyAlt),function(x) strsplit(x,"_")[[1]][2],USE.NAMES=F))
-                            sampleId=clinThis$id[which(clinThis$id%in%sampleId & clinThis[,varList[varId]]%in%colnames(outPercThis))]
+                            #sampleId=clinThis$id[which(clinThis$id%in%sampleId & clinThis[,varList[varId]]%in%colnames(outPercThis))]
+                            sampleId=clinThis$id[samIdThis][which(clinThis$id[samIdThis]%in%sampleId & clinThis[samIdThis,varList[varId]]%in%colnames(outPercThis))]
                             save(geneId,sampleId,file=paste(fName2,".RData",sep=""))
                         }
                     }
