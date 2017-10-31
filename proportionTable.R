@@ -241,8 +241,8 @@ for (nameValueFlag in nameValueList) {
         samSize=c(0,0)
     }
     
-    subset1Flag="_withLung"
     subset1Flag=""
+    subset1Flag="_withLung"
     
     ## All genesets
     #genesetList=c("_swiSnfComp","_histoneMod","_swiSnfHisMod","_swiSnfPlusHisMod","_atmAtr","_rbEtc","_swiSnfEtc")
@@ -261,6 +261,11 @@ for (nameValueFlag in nameValueList) {
     genesetList=c("_30topGeneInUcsf500")
     genesetList=c("_30topGeneInUcsf500Fmi")
     genesetList=c("_30topGene")
+    genesetList=c("_p53Etc")
+    
+    yLim=NULL
+    yLim=c(0,60) # Used for genesetList=_p53Etc, UCSF 500, FMI with lung: Poorly differentiated, well differentiated
+    
     
     for (genesetFlag in genesetList) {
         geneset2List=sub("_","",genesetFlag)
@@ -286,6 +291,8 @@ for (nameValueFlag in nameValueList) {
         "_swiSnfEtc"={geneset2List=c("swiSnfEtc")
         },
         "_rbEtc"={geneset2List=c("rbEtc")
+        },
+        "_p53Etc"={geneset2List=c("p53Etc")
         }
         )
         
@@ -297,7 +304,12 @@ for (nameValueFlag in nameValueList) {
                 altTypeUniq1="anyAlt"
                 altTypeUniq2=cbind(altTypeUniq1,"1")
                 colList=c("grey")
-                candGeneThis=NULL
+                if (genesetFlag%in%c("_p53Etc")) {
+                    candGeneThis=getCandidateGenes(genesetFlag)
+                    write.table(candGeneThis,file=paste("geneList",genesetFlag,".txt",sep=""),append=F,col.names=T,row.names=F,sep="\t",quote=F)
+                } else {
+                    candGeneThis=NULL
+                }
             } else {
                 altTypeUniq1=sort(unique(clin1$altType))
                 #altTypeUniq2=cbind(c(altTypeUniq1,paste(altTypeUniq1[1],"+",altTypeUniq1[3]),paste(altTypeUniq1[1:3],"+",altTypeUniq1[4])),as.character(c(1:length(altTypeUniq1),10*(1)+3,10*(1:3)+4)))
@@ -345,13 +357,16 @@ for (nameValueFlag in nameValueList) {
                     clinThis$disease=sub("_","",strsplit(subset2Flag,"Diff")[[1]][1])
                     disUniq=cbind(c(""),c("All samples"))
                     varList=c("disease")
-                    if (any(!is.na(clinThis$cellSizeEB))) {
-                        varList=c(varList,"cellSizeEB")
-                    }
                     varName=varList
-                    if (any(!is.na(clinThis$grade))) {
-                        varList=c(varList,"gradeThis")
-                        varName=c(varName,"grade")
+                    if (!genesetFlag%in%c("_p53Etc")) {
+                        if (any(!is.na(clinThis$cellSizeEB))) {
+                            varList=c(varList,"cellSizeEB")
+                        }
+                        varName=varList
+                        if (any(!is.na(clinThis$grade))) {
+                            varList=c(varList,"gradeThis")
+                            varName=c(varName,"grade")
+                        }
                     }
                 } else {
                     heading1=paste(heading1,": All samples",sep="")
@@ -771,7 +786,7 @@ for (nameValueFlag in nameValueList) {
                             i=order(x,decreasing=T)[1:numThres]
                             fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",geneset2Flag,fName1,subset2Flag,".txt",sep="")
                             heading=paste(heading,"Table of ",length(i)," genes with most alterations",ifelse(length(x2)==2,paste(" in ",nm,sep=""),""),sep="")
-                        } else if (geneset2Flag%in%c("actionableGene","swiSnf","swiSnfComponent","histoneModifier","atmAtr","swiSnfHistoneModifier","swiSnfPlusHistoneModifier","swiSnfHistoneModifierAtmAtr","swiSnfPlusHistoneModifierPlusAtmAtr","rbEtc","swiSnfCompEtc","swiSnfEtc")) {
+                        } else if (geneset2Flag%in%c("actionableGene","swiSnf","swiSnfComponent","histoneModifier","atmAtr","swiSnfHistoneModifier","swiSnfPlusHistoneModifier","swiSnfHistoneModifierAtmAtr","swiSnfPlusHistoneModifierPlusAtmAtr","p53Etc","rbEtc","swiSnfCompEtc","swiSnfEtc")) {
                             if (geneFamilyFlag) {
                                 i=match(toupper(unique(candGeneThis$family2)),toupper(rownames(outPropAll)))
                             } else {
@@ -937,7 +952,7 @@ for (nameValueFlag in nameValueList) {
                             grpId=1
                             x=table(clinThis[samIdThis,varList[varId]][which(clinThis[samIdThis,varList[varId]]%in%grpUniq3[,1])])
                             if (ncol(out)==1) out2=100*c(out) else out2=100*t(out)
-                            barplot(out2,names.arg=rownames(out),main=ifelse(grpId==1,heading2,""),ylab="% alteration",col=colListThis,las=3,cex.names=cexAxis,cex.axis=cexAxis,cex.lab=cexLab,space=0)
+                            barplot(out2,names.arg=rownames(out),ylim=yLim,main=ifelse(grpId==1,heading2,""),ylab="% alteration",col=colListThis,las=3,cex.names=cexAxis,cex.axis=cexAxis,cex.lab=cexLab,space=0)
                             #axis(side=1,at=1:length(gId),labels=rownames(out4AltPropAll)[gId])
                             #axis(side=1,at=seq(1,nrow(out),by=nrow(grpUniq3)+1),labels=rownames(out4AltPropAll)[gId],tick=F,cex.axis=cexAxis2,cex.lab=cexLab)
                             #x=rownames(out4AltPropAll)[gId]; k=seq(1,length(x),by=2); x[k]=paste(x[k],"\n")

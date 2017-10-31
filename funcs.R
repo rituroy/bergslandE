@@ -196,6 +196,22 @@ getCandidateGenes=function(genesetFlag="") {
         candGeneThis$family=candGeneThis$family2="ATM.ATR"
         candGeneThis=candGene[which(candGene$family2%in%c("ATM.ATR")),]
     },
+    "_p53Etc"={
+        x=c("TP53","RB1","CDKN2A","CDKN2B","APC","KRAS","MEN1","SETD2","BRAF","MYC")
+        x=x[which(x%in%rownames(datGP))]
+        candGeneThis=candGene[1:length(x),]; candGeneThis$gene=x
+        candGeneThis$family=candGeneThis$family2="P53, etc."
+    },
+    "_rbEtc"={
+        x=c("TP53","RB1","CDKN2A","CDKN2B","MEN1","ATRX","DAXX","APC","RAS-MAPK")
+        x=x[which(x%in%rownames(datGP))]
+        candGeneThis=candGene[1:length(x),]; candGeneThis$gene=x
+        candGeneThis=rbind(candGeneThis,candGene[which(candGene$family=="RAS-MAPK Signaling Pathway"),])
+        candGeneThis$family=candGeneThis$family2="RB, etc."
+        k=match(c("TP53","RB1","CDKN2A","CDKN2B","MEN1","ATRX","DAXX","APC"),candGene$family2); k=k[!is.na(k)]
+        k=c(k,which(candGene$family2=="RAS-MAPK"))
+        candGeneThis=candGene[k,]
+    },
     "_swiSnfHisMod"={
         candGeneThis=candGene[which(candGene$family2=="SWI.SNF" | candGene$family2%in%c("Modifier.Histone")),]
     },
@@ -207,16 +223,6 @@ getCandidateGenes=function(genesetFlag="") {
     },
     "_swiSnfPlusHisModPlusAtmAtr"={
         candGeneThis=candGene[which(candGene$family2=="SWI.SNF_Modifier.Histone_ATM.ATR"),]
-    },
-    "_rbEtc"={
-        x=c("TP53","RB1","CDKN2A","CDKN2B","MEN1","ATRX","DAXX","APC","RAS-MAPK")
-        x=x[which(x%in%rownames(datGP))]
-        candGeneThis=candGene[1:length(x),]; candGeneThis$gene=x
-        candGeneThis=rbind(candGeneThis,candGene[which(candGene$family=="RAS-MAPK Signaling Pathway"),])
-        candGeneThis$family=candGeneThis$family2="RB, etc."
-        k=match(c("TP53","RB1","CDKN2A","CDKN2B","MEN1","ATRX","DAXX","APC"),candGene$family2); k=k[!is.na(k)]
-        k=c(k,which(candGene$family2=="RAS-MAPK"))
-        candGeneThis=candGene[k,]
     },
     "_swiSnfCompEtc"={
         k=match(c("TP53","RB1","CDKN2A","CDKN2B","MEN1","ATRX","DAXX","APC"),candGene$family2); k=k[!is.na(k)]

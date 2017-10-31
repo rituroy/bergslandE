@@ -60,8 +60,8 @@ nameValueList=c("allSamples","jeffVetted","fionaVetted")
 nameValueList=c("jeffVetted")
 nameValueList=c("allSamples")
 nameValueList=c("fionaVetted")
-nameValueList=c("ucsf500Fmi")
 nameValueList=c("ucsf500")
+nameValueList=c("ucsf500Fmi")
 for (nameValueFlag in nameValueList) {
     switch(nameValueFlag,
     "allSamples"={nameValue=data.frame(name="subset",value="allSamples")
@@ -206,13 +206,14 @@ for (nameValueFlag in nameValueList) {
     datTypeFlag=c("_fracRead","")
     datTypeFlag=c("","")
     
-    subset1Flag="_withLung"
     subset1Flag=""
+    subset1Flag="_withLung"
     
     ordFlag=""
     ordFlag="_swiSnfEtc"
     ordFlag="_tmbSwiSnfEtc"
     ordFlag="_diffEBki67EB"
+    ordFlag="_diffEBpriSiteEBki67EB"
     ordFlag="_priSiteEBki67EB"
     
     outFormat="png"
@@ -637,6 +638,8 @@ for (nameValueFlag in nameValueList) {
         fName1=""
         datadirG=paste("results/ucsf500/",ifelse(subset1Flag=="_withLung","withLung","noLung"),"/",sub("_","",subsetFlag[1]),"/geneSampleId/",sep="")
         genesetList=dir(datadirG,pattern="geneSampleId_geneByDisease"); genesetList=genesetList[grep(tolower(nameValue$value[which(nameValue$name=="subset")]),tolower(genesetList))]; genesetList=sub(".RData","",sub("geneSampleId_","",genesetList),fixed=T)
+        datadirG=paste("results/ucsf500/p53Etc/",ifelse(subset1Flag=="_withLung","withLung","noLung"),"/",sub("_","",subsetFlag[1]),"/geneSampleId/",sep="")
+        genesetList=dir(datadirG,pattern="geneSampleId_geneByDisease"); genesetList=genesetList[grep(tolower(nameValue$value[which(nameValue$name=="subset")]),tolower(genesetList))]; genesetList=sub(".RData","",sub("geneSampleId_","",genesetList),fixed=T)
         subset2Flag=c("")
         subset3Flag[1]=""
         geneFamilyFlag=F
@@ -753,6 +756,7 @@ for (nameValueFlag in nameValueList) {
     }
     subset2List=c("_lungSmall","_pancreas","_colon","_other")
     subset2List=subset2Flag
+    subset2List=c("_poorDiff","_wellDiff")
     
     getCorFlag=T
     getCorFlag=F
@@ -761,8 +765,8 @@ for (nameValueFlag in nameValueList) {
     
     if (clusterFlag[1]=="_supervised") {
         #if (length(grep("percPatient",genesetList))!=0) geneBar="clusterPr"
-        geneBar="clusterPr"
         geneBar=""
+        geneBar="clusterPr"
         sampleBar=""
         sampleBar="cluster"
     } else if (clusterFlag[1]=="_comutated") {
@@ -860,7 +864,7 @@ for (nameValueFlag in nameValueList) {
                                 
                             }
                         }
-                        annColAll=annCol
+                        #annColAll=annCol
                         
                         if (datTypeFlag[1]=="_fracRead") {
                             if (geneFamilyFlag) {
@@ -900,7 +904,8 @@ for (nameValueFlag in nameValueList) {
                             x=strsplit(genesetFlag,"_")[[1]]
                             #fNameOut=paste("_",paste(x[2:length(x)],collapse="_"),sep="")
                             fNameOut=paste("_",genesetFlag,fName1,sep="")
-                            if (subset2Flag!="") {
+                            if (subset1Flag!="" & length(grep(subset1Flag,fNameOut))==2) fNameOut=sub(subset1Flag,"",fNameOut)
+                            if (subset2Flag!="" ) {
                                 #if (length(grep(sub("_","",subset2Flag),fNameOut))==0) {
                                 if (length(grep(paste(subset2Flag,"_",sep=""),fNameOut))==0) {
                                     fNameOut=sub("_geneByDisease",paste("_geneByDisease",subset2Flag,sep=""),fNameOut)
@@ -1016,6 +1021,10 @@ for (nameValueFlag in nameValueList) {
                                 heading=paste(heading,": SCLC samples",sep="")
                             }
                             )
+                            if (length(grep("Diff",subset2Flag))==1) {
+                                samId3=samId3[which(clin3$diffEB[samId3]==sub("Diff","",strsplit(subset2Flag,"_")[[1]][2]))]
+                                heading=paste(sub(": All samples","",heading),": ",ifelse(clin3$diffEB[1]=="poor","Poorly","Well")," differentiated",sep="")
+                            }
                             if (subset4Flag[2]=="_smallCell") {
                                 samId3=samId3[which(clin3$disOntTerm2[samId3]=="lungSmall" | clin32$cellSize[samId3]=="SC")]
                             } else if (subset4Flag[2]=="_smallLargeCell") {
@@ -1270,7 +1279,6 @@ for (nameValueFlag in nameValueList) {
                             cat("(length(g0)==0)\n")
                             next
                         }
-                        
                         colHM=colHMCon
                         genePvMat=geneQvMat=NULL
                         switch(datTypeFlag[2],
@@ -1568,7 +1576,8 @@ for (nameValueFlag in nameValueList) {
                             #varList="mutPerc"; varName=paste(varList," ",sep="")
                             varList="mutPerc"; varName=""
                             varFList="mutPerc"; varFName=paste(varFList," ",sep="")
-                            annColAll=annCol; annRowAll=annRow
+                            #annColAll=annCol; annRowAll=annRow
+                            annRowAll=annRow
                             
                             colHM=colHMCon
                         }
@@ -1833,6 +1842,10 @@ for (nameValueFlag in nameValueList) {
                             "_priSiteEBki67EB"={
                                 annCol$grp=10*annCol$ki67EB2; annCol$grp[which(annCol$ki67EB=="NR")]=2*max(annCol$grp,na.rm=T)
                                 annCol$grp=paste(annCol$primarySiteEB2,formatC(annCol$grp,width=nchar(as.character(max(annCol$grp,na.rm=T))),flag="0"))
+                            },
+                            "_diffEBpriSiteEBki67EB"={
+                                annCol$grp=10*annCol$ki67EB2; annCol$grp[which(annCol$ki67EB=="NR")]=2*max(annCol$grp,na.rm=T)
+                                annCol$grp=paste(annCol$diffEB,annCol$primarySiteEB2,formatC(annCol$grp,width=nchar(as.character(max(annCol$grp,na.rm=T))),flag="0"))
                             }
                             )
                             
@@ -2005,13 +2018,8 @@ for (nameValueFlag in nameValueList) {
                         
                         
                         
-                        
-                        
-                        
+                        nClust[1]=NA
                         #nClust[2]=NA
-                        
-                        
-                        
                         
                         
                         
@@ -2277,6 +2285,7 @@ for (nameValueFlag in nameValueList) {
                             cexThis[2]=1
                             cexThis[3]=1
                         }
+                        nameCol=rep("",length(nameCol))
                         if ("gene"%in%varListAll) cexThis[2]=1
                         #if (length(colHM[[1]])>1) {
                         if (is.null(colHM[[2]])) {
