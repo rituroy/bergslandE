@@ -1,3 +1,4 @@
+######################################################################
 ## Download from ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/
 
 fName1="candGene_swiSnfMod"
@@ -49,3 +50,15 @@ for (i22 in 1:length(x2)) {
 tbl21=tbl21[!duplicated(tbl21$gene),]
 
 write.table(tbl21,file=paste(fName1,"_v2.txt",sep=""),append=F,col.names=T,row.names=F,sep="\t",quote=F)
+
+######################################################################
+## Create genelist
+
+candGene=read.table("geneList_2018104.txt",sep="\t",h=T,quote="",comment.char="",as.is=T,fill=T)
+load("results/ucsf500/30topGene/geneSampleId/geneSampleId_geneByDisease_30topGene_ucsf500Fmi_grade3_noAmp.RData")
+i=match(candGene$gene,geneId)
+table(is.na(i))
+geneId=geneId[i]
+save(geneId,sampleId,file="geneSampleId_geneByDisease_27topGene_ucsf500Fmi_grade3_noAmp.RData")
+
+######################################################################

@@ -9,13 +9,13 @@ computerFlag=""
 
 ## ----------------------------------------------
 if (computerFlag=="cluster") {
-	setwd("/home/royr/project/EmilyBergsland")
+	setwd("/home/royr/project/BergslandE")
 } else {
 	dirSrc="/Users/royr/UCSF/"
 	dirSrc2=dirSrc
     dirSrc3="code/"
     dirSrc3="/Users/royr/Downloads/bergslandE-net_2015/"
-	setwd(paste(dirSrc2,"EmilyBergsland",sep=""))
+	setwd(paste(dirSrc2,"BergslandE",sep=""))
 }
 
 

@@ -9,15 +9,14 @@ computerFlag=""
 
 ## ----------------------------------------------
 if (computerFlag=="cluster") {
-    setwd("/home/royr/project/EmilyBergsland")
+    setwd("/home/royr/project/bergslandE")
 } else {
     dirSrc="/Users/royr/UCSF/"
     dirSrc2=dirSrc
     dirSrc3="code/"
     dirSrc3="/Users/royr/Downloads/bergslandE-net_2015/"
-    setwd(paste(dirSrc2,"EmilyBergsland",sep=""))
+    setwd(paste(dirSrc2,"bergslandE",sep=""))
 }
-
 
 ## ----------------------------------------------
 ## ----------------------------------------------
@@ -38,7 +37,7 @@ tolowerWords=function(s, strict=FALSE) {
 
 ####################################################################
 ####################################################################
-
+## Section 2
 
 # Actionable genes
 # grpUniq=c("BRAF","SETD2","MMR","ATRX","BRCA1","BRCA2")
@@ -134,10 +133,19 @@ for (nameValueFlag in nameValueList) {
             i=1:nrow(datGPU)
             j=which(clinU$testUCSF500orFMI%in%c("UCSF500"))
         } else {
-            j=which(clinU$testUCSF500orFMI%in%c("UCSF500","FMI"))
+            if (datVerFlag=="_20180929") {
+                j=1:nrow(clinU)
+            } else {
+                j=which(clinU$testUCSF500orFMI%in%c("UCSF500","FMI"))
+            }
         }
         clinU=clinU[j,]
-        datGP=datGPU[i,j]
+        #datGP=datGPU[i,j]
+        #datGP=apply(datGPU[i,j],c(1,2),function(x) {y=as.character(x); ifelse(is.na(y),0,as.integer(!y%in%c("","0")))})
+        datGP=datGPU[,which(sapply(colnames(datGPU),function(x) {
+            y=as.integer(strsplit(x,"_")[[1]][2])
+            y%in%clinU$id
+        },USE.NAMES=F))]
         samSizeAll=ceiling(nrow(clinU)/10)*10
         
         tbl1=read.table("docs/ucsf500/gene/diff-v1-dropped.txt",sep="\t",h=F,quote="",comment.char="",as.is=T,fill=T)
@@ -243,6 +251,8 @@ for (nameValueFlag in nameValueList) {
     
     subset1Flag=""
     subset1Flag="_withLung"
+    subset1Flag="_grade3"
+    subset1Flag="_grade3_noAmp"
     
     ## All genesets
     #genesetList=c("_swiSnfComp","_histoneMod","_swiSnfHisMod","_swiSnfPlusHisMod","_atmAtr","_rbEtc","_swiSnfEtc")
@@ -260,11 +270,12 @@ for (nameValueFlag in nameValueList) {
     genesetList=c("")
     genesetList=c("_30topGeneInUcsf500")
     genesetList=c("_30topGeneInUcsf500Fmi")
-    genesetList=c("_30topGene")
     genesetList=c("_p53Etc")
+    genesetList=c("_30topGene")
     
-    yLim=NULL
     yLim=c(0,60) # Used for genesetList=_p53Etc, UCSF 500, FMI with lung: Poorly differentiated, well differentiated
+    yLim=c(0,60) # Used for genesetList UCSF 500, FMI with lung: Poorly differentiated, well differentiated
+    yLim=NULL
     
     
     for (genesetFlag in genesetList) {
@@ -349,12 +360,21 @@ for (nameValueFlag in nameValueList) {
                     heading1=paste("UCSF 500",sep="")
                 }
                 if (length(grep("Diff",subset2Flag))==1) {
-                    j=which(clinU$diffEB==sub("Diff","",strsplit(subset2Flag,"_")[[1]][2]))
-                    clinThis=clinU[j,]
-                    heading1=paste(heading1,": ",ifelse(clinThis$diffEB[1]=="poor","Poorly","Well")," differentiated",sep="")
-                    clinThis$disease=clinThis$diffEB[1]
-                    disUniq=cbind(c(""),paste(clinThis$diffEB[1],ifelse(clinThis$diffEB[1]=="poor","ly",""),c(" differentiated"),sep=""))
-                    clinThis$disease=sub("_","",strsplit(subset2Flag,"Diff")[[1]][1])
+                    if (datVerFlag%in%c("_20171019")) {
+                        j=which(clinU$diffEB==sub("Diff","",strsplit(subset2Flag,"_")[[1]][2]))
+                        clinThis=clinU[j,]
+                        heading1=paste(heading1,": ",ifelse(clinThis$diffEB[1]=="poor","Poorly","Well")," differentiated",sep="")
+                        clinThis$disease=clinThis$diffEB[1]
+                        disUniq=cbind(c(""),paste(clinThis$diffEB[1],ifelse(clinThis$diffEB[1]=="poor","ly",""),c(" differentiated"),sep=""))
+                        clinThis$disease=sub("_","",strsplit(subset2Flag,"Diff")[[1]][1])
+                    } else {
+                        j=which(clinU$diffNJ==sub("Diff","",strsplit(subset2Flag,"_")[[1]][2]))
+                        clinThis=clinU[j,]
+                        heading1=paste(heading1,": ",clinThis$diffNJ[1],sep="")
+                        clinThis$disease=clinThis$diffNJ[1]
+                        disUniq=cbind(c(""),paste(clinThis$diffNJ[1],sep=""))
+                        clinThis$disease=sub("_","",strsplit(subset2Flag,"Diff")[[1]][1])
+                    }
                     disUniq=cbind(c(""),c("All samples"))
                     varList=c("disease")
                     varName=varList
@@ -373,18 +393,24 @@ for (nameValueFlag in nameValueList) {
                     clinThis=clinU
                     clinThis$disease="allSamples"
                     disUniq=cbind(c(""),c("All samples"))
-                    varList=c("disease","diffEB","cellSizeEB")
-                    varName=c("disease","diffEB","cellSizeEB")
-                    #varList=c("disease","primarySiteEB2","diffEB","cellSizeEB")
-                    #varName=c("disease","primarySiteEB","diffEB","cellSizeEB")
-                    varList=c("disease","primarySiteEB2","diffEB","cellSizeEB","gradeThis")
-                    varName=c("disease","primarySiteEB","diffEB","cellSizeEB","grade")
+                    if (datVerFlag%in%c("_20171019")) {
+                        varList=c("disease","diffEB","cellSizeEB")
+                        varName=c("disease","diffEB","cellSizeEB")
+                        #varList=c("disease","primarySiteEB2","diffEB","cellSizeEB")
+                        #varName=c("disease","primarySiteEB","diffEB","cellSizeEB")
+                        varList=c("disease","primarySiteEB2","diffEB","cellSizeEB","gradeThis")
+                        varName=c("disease","primarySiteEB","diffEB","cellSizeEB","grade")
+                    } else {
+                        varList=c("disease","primarySiteEB2","diffNJ","cellSizeEB","gradeThis")
+                        varName=c("disease","primarySiteEB","diffNJ","cellSizeEB","grade")
+                    }
                 }
                 clinThis$primarySiteEB2=tolower(clinThis$primarySiteEB)
                 clinThis$primarySiteEB2[which(clinThis$primarySiteEB2=="other(lung)")]="lung"
                 clinThis$primarySiteEB2[grep("othergi(", clinThis$primarySiteEB2,fixed=T)]="otherGI"
                 clinThis$primarySiteEB2[grep("other(", clinThis$primarySiteEB2,fixed=T)]="other"
                 clinThis$primarySiteEB2[grep("unknown", clinThis$primarySiteEB2,fixed=T)]="unknown"
+                clinThis$primarySiteEB2[grep("other",clinThis$primarySiteEB2)]="other"
                 clinThis$gradeThis=clinThis$grade
                 clinThis$gradeThis[which(clinThis$grade=="grade2/3")]="gradeT"
             } else {
@@ -493,6 +519,11 @@ for (nameValueFlag in nameValueList) {
                     clinThis=clinThis[which(clinThis$disease!="other"),]
                 }
             }
+            
+            #varList=c("primarySiteEB2")
+            #varName=c("primarySiteEB")
+            
+            
             if (ncol(disUniq)==2) disUniq=cbind(disUniq,rep("",nrow(disUniq)))
             
             for (dId in 1:nrow(disUniq)) {
@@ -512,6 +543,15 @@ for (nameValueFlag in nameValueList) {
                 }
                 if (subset1Flag=="") {
                     samIdAll=samIdAll[!clinThis$caseId[samIdAll]%in%samExclId]
+                } else {
+                    x=strsplit(subset1Flag,"_")[[1]]
+                    k=grep("grade",x)
+                    if (length(k)==1) {
+                        samIdAll=samIdAll[which(clinThis$grade[samIdAll]==x[k])]
+                    }
+                    if ("noAmp"%in%x) {
+                        samIdAll=samIdAll[which(clinThis$diffNJ[samIdAll]!="could be amphicrine carcinoma")]
+                    }
                 }
                 for (varId in 1:length(varList)) {
                     cat("\n\n================ variable: ",varList[varId],"\n\n",sep="")
@@ -529,14 +569,27 @@ for (nameValueFlag in nameValueList) {
                         },
                         "primarySiteEB2"={
                             grpUniq3=sort(unique(clinThis[,varList[varId]]))
+                            
                             grpUniq3=c("colorectal","other gi","other non-gi","pancreas","unknown")
+                            grpUniq3=cbind(grpUniq3,grpUniq3,toupper(substr(grpUniq3,1,1)))
+                            grpUniq3[which(grpUniq3[,1]=="other non-gi"),3]="N"
+                            
+                            grpUniq3=c("colorectal","other","pancreas","unknown")
                             grpUniq3=cbind(grpUniq3,grpUniq3,toupper(substr(grpUniq3,1,1)))
                         },
                         "diffEB"={grpUniq3=c("poor","well","nr")
                             grpUniq3=cbind(grpUniq3,c("Poor","Well","NR"),toupper(substr(grpUniq3,1,1)))
                         },
-                        "cellSizeEB"={grpUniq3=c("small","large","nr")
-                            grpUniq3=cbind(grpUniq3,c("Small","Large","NR"),toupper(substr(grpUniq3,1,1)))
+                        "cellSizeEB"={grpUniq3=c("small","large","small-large","large-manec","nr")
+                            grpUniq3=cbind(grpUniq3,c("Small","Large","Small-large","Large-manec","NR"),c("S","L","Sl","Lm","NR"))
+                        },
+                        "diffNJ"={#grpUniq3=sort(unique(clinThis[,varList[varId]]))
+                            grpUniq3=cbind(c("adenocarcinoma","ambiguous","couldbeamphicrinecarcinoma","g1net","g2net","g3net","nec","net"),
+                                c("Adenocarcinoma","Ambiguous","Amphicrinecarcinoma?","G1NET","G2NET","G3NET","NEC","NET"),
+                                c("Ad","Amb","Amp","G1","G2","G3","Nc","Nt"))
+                                grpUniq3=cbind(c("adenocarcinoma","ambiguous","could be amphicrine carcinoma","g1 net","g2 net","g3 net","nec"),
+                                c("Adenocarcinoma","Ambiguous","Amphicrine","G1 NET","G2 NET","G3 NET","NEC"),
+                                c("Ad","Amb","Amp","G1","G2","G3","Nc"))
                         },
                         "gradeThis"={
                             #grpUniq3=paste("grade",c("2","3"),sep="")
@@ -571,22 +624,23 @@ for (nameValueFlag in nameValueList) {
                         }
                     }
                     x=table(clinThis[samIdAll,varList[varId]])
-                    k1=match(grpUniq3[,1],names(x))
+                    #k1=match(grpUniq3[,1],names(x))
                     #k=match(grpUniq3[,1],names(x)); k1=k[!is.na(k)]
+                    k=match(grpUniq3[,1],names(x)); k2=which(!is.na(k)); k1=k[k2]
                     k=which(x[k1]>=samSize[2])
                     if (length(grep("_ucsf500",subset2Flag))==1) {
                     } else {
                         if (length(k)<2) next
                     }
                     if (length(k)==1) {
-                        grpUniq3=matrix(grpUniq3[k,],nrow=1)
+                        grpUniq3=matrix(grpUniq3[k2[k],],nrow=1)
                         n=1
                         grpUniq32=matrix(nrow=n,ncol=2)
                         k1=k2=1
                         grpUniq32[k,1]=grpUniq3[k1,1]
                         grpUniq32[k,2]=grpUniq3[k2,1]
                     } else {
-                        grpUniq3=grpUniq3[k,]
+                        grpUniq3=grpUniq3[k2[k],]
                         n=nrow(grpUniq3)*(nrow(grpUniq3)-1)/2
                         grpUniq32=matrix(nrow=n,ncol=2)
                         k=1
@@ -656,7 +710,8 @@ for (nameValueFlag in nameValueList) {
                         out4AltPropCombAll[g1,match(names(res),colId)]=res/sum(res)
                         for (k in 1:nrow(grpUniq3)) {
                             j=which(clinThis[samIdThis,varList[varId]]==grpUniq3[k,1])
-                            kk=grep(paste("_",grpUniq3[k,1],sep=""),colnames(out4AltPropAll),fixed=T)
+                            #kk=grep(paste("_",grpUniq3[k,1],sep=""),colnames(out4AltPropAll),fixed=T)
+                            kk=which(colnames(out4AltPropAll)%in%paste(c("noAlt","anyAlt"),"_",grpUniq3[k,1],sep=""))
                             res=table(out4Alt[g1,j])
                             out4AltPropAll[g1,kk[match(names(res),colId)]]=res/sum(res)
                         }
@@ -712,19 +767,19 @@ for (nameValueFlag in nameValueList) {
                             if (length(grep("%patientGrp1Grp2",geneset2Flag))==1) {
                                 propThres=as.integer(sub("%patientGrp1Grp2","",geneset2Flag))/100
                                 i=match(c("TP53","RB1","APC","CDKN2A","KRAS","MEN1","CDKN2B","CCNE1","DAXX","FBXW7"),rownames(outPropAll))
-                                fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",propThres*100,"percPatientGrp1Grp2",fName1,subset2Flag,".txt",sep="")
+                                fName=paste("proportionTable_geneBy",capWords(varName[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",propThres*100,"percPatientGrp1Grp2",fName1,subset2Flag,".txt",sep="")
                                 heading=paste(heading,"Table of ",length(i)," genes with alterations in ",propFlag," ",propThres*100,"% of patients for group 1 or 2",sep="")
                             } else if (length(grep("%patientDisease",geneset2Flag))==1) {
                                 propThres=as.integer(sub("%patientDisease","",geneset2Flag))/100
                                 i=match(c("TP53","RB1","MLL2","APC","CDKN2A","LRP1B","KRAS","MEN1","FBXW7","DAXX"),rownames(outPropAll))
-                                fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",propThres*100,"percPatientInAnyDisease",fName1,subset2Flag,".txt",sep="")
+                                fName=paste("proportionTable_geneBy",capWords(varName[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",propThres*100,"percPatientInAnyDisease",fName1,subset2Flag,".txt",sep="")
                                 heading=paste(heading,"Table of ",length(i)," genes with alterations in ",propFlag," ",propThres*100,"% of patients for SCLC, pancreas or colon",sep="")
                             }  else if (subset2Flag=="_lungSmallFionaVettedGI_T5aT7Assays" & geneFlag) {
                                 propThres=as.integer(sub("%patient","",geneset2Flag))/100
-                                fName2=paste("geneSampleId_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",propThres*100,"percPatient",fName1,"_lungSmallJeffVettedHighGradeGI_T5aT7Assays.RData",sep="")
+                                fName2=paste("geneSampleId_geneBy",capWords(varName[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",propThres*100,"percPatient",fName1,"_lungSmallJeffVettedHighGradeGI_T5aT7Assays.RData",sep="")
                                 load(paste(datadirG,fName2,sep=""))
                                 i=match(geneId,rownames(outPropAll))
-                                fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",propThres*100,"percPatient",fName1,subset2Flag,".txt",sep="")
+                                fName=paste("proportionTable_geneBy",capWords(varName[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",propThres*100,"percPatient",fName1,subset2Flag,".txt",sep="")
                                 heading=paste(heading,"Table of ",length(i)," genes with alterations in ",propFlag," ",propThres*100,"% of patients in any group within ",disUniq[dId,2],sep="")
                             } else {
                                 propThres=as.integer(sub("%patient","",geneset2Flag))/100
@@ -742,7 +797,7 @@ for (nameValueFlag in nameValueList) {
                                     }
                                 }
                                 i=sort(unique(i))
-                                fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,3]=="","",paste("_within",capWords(disUniq[dId,3]),sep="")),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",propThres*100,"percPatient",fName1,subset2Flag,".txt",sep="")
+                                fName=paste("proportionTable_geneBy",capWords(varName[varId]),ifelse(disUniq[dId,3]=="","",paste("_within",capWords(disUniq[dId,3]),sep="")),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",propThres*100,"percPatient",fName1,subset2Flag,".txt",sep="")
                                 heading=paste(heading,"Table of ",length(i)," genes with alterations in ",propFlag," ",propThres*100,"% of patients in ",ifelse(disUniq[dId,3]=="",paste("any group within ",disUniq[dId,2],sep=""),disUniq[dId,3]),sep="")
                             }
                         } else if (length(grep("patient",geneset2Flag))==1) {
@@ -760,15 +815,15 @@ for (nameValueFlag in nameValueList) {
                             i=order(x,decreasing=T)
                             i=i[which(x[i]>=numThres)]
                             if (length(i)==0) {cat("No genes !!!\n\n"); next}
-                            fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",geneset2Flag,fName1,subset2Flag,".txt",sep="")
+                            fName=paste("proportionTable_geneBy",capWords(varName[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",geneset2Flag,fName1,subset2Flag,".txt",sep="")
                             heading=paste(heading,"Table of ",length(i)," genes with >= ",numThres," patients with alterations",ifelse(length(x2)==2,paste(" in ",nm,sep=""),""),sep="")
                         } else if (length(grep("topGeneIn",geneset2Flag))==1) {
                             fName2=strsplit(genesetFlag,"In")[[1]]; fName2=paste(fName2[1],"_",tolowerWords(fName2[2]),sep="")
-                            fName2=paste("geneSampleId_geneBy",capWords(varList[varId]),fName2,subset1Flag,".RData",sep="")
+                            fName2=paste("geneSampleId_geneBy",capWords(varName[varId]),fName2,subset1Flag,".RData",sep="")
                             load(paste(datadirG,fName2,sep=""))
                             x2=strsplit(geneset2Flag,"topGeneIn")[[1]]
                             i=match(geneId,rownames(outPropAll))
-                            fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",geneset2Flag,fName1,subset2Flag,".txt",sep="")
+                            fName=paste("proportionTable_geneBy",capWords(varName[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",geneset2Flag,fName1,subset2Flag,".txt",sep="")
                             heading=paste(heading,"Table of ",length(i)," genes with most alterations",ifelse(length(x2)==2,paste(" in ",toupper(x2[2]),sep=""),""),sep="")
                         } else if (length(grep("topGene",geneset2Flag))==1) {
                             #numThres=as.integer(sub("topGene","",geneset2Flag))
@@ -784,7 +839,7 @@ for (nameValueFlag in nameValueList) {
                             }
                             x=apply(out4Alt[,j],1,function(x) {sum(x!=0,na.rm=T)})
                             i=order(x,decreasing=T)[1:numThres]
-                            fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",geneset2Flag,fName1,subset2Flag,".txt",sep="")
+                            fName=paste("proportionTable_geneBy",capWords(varName[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),"_",geneset2Flag,fName1,subset2Flag,".txt",sep="")
                             heading=paste(heading,"Table of ",length(i)," genes with most alterations",ifelse(length(x2)==2,paste(" in ",nm,sep=""),""),sep="")
                         } else if (geneset2Flag%in%c("actionableGene","swiSnf","swiSnfComponent","histoneModifier","atmAtr","swiSnfHistoneModifier","swiSnfPlusHistoneModifier","swiSnfHistoneModifierAtmAtr","swiSnfPlusHistoneModifierPlusAtmAtr","p53Etc","rbEtc","swiSnfCompEtc","swiSnfEtc")) {
                             if (geneFamilyFlag) {
@@ -793,18 +848,28 @@ for (nameValueFlag in nameValueList) {
                                 i=match(toupper(candGeneThis$gene),toupper(rownames(outPropAll)))
                             }
                             i=i[!is.na(i)]
-                            fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),genesetFlag,fName1,subset2Flag,".txt",sep="")
+                            fName=paste("proportionTable_geneBy",capWords(varName[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),genesetFlag,fName1,subset2Flag,".txt",sep="")
                             #heading=paste(heading,"Table of ",length(i)," genes with any alteration in a group within ",disUniq[dId,2],sep="")
                             heading=paste(heading,"Table of ",length(i)," gene",ifelse(geneFamilyFlag," family",""),ifelse(length(i)==1,"","s"),sep="")
                         } else {
                             i=1:nrow(outPropAll)
-                            fName=paste("proportionTable_geneBy",capWords(varList[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),ifelse(geneset2Flag=="","","_"),geneset2Flag,fName1,subset2Flag,".txt",sep="")
+                            fName=paste("proportionTable_geneBy",capWords(varName[varId]),ifelse(disUniq[dId,1]=="","",paste("_within",capWords(disUniq[dId,1]),sep="")),ifelse(geneset2Flag=="","","_"),geneset2Flag,fName1,subset2Flag,".txt",sep="")
                             heading=paste(heading,"Table of ",length(i)," genes with any alteration",ifelse(disUniq[dId,1]=="","",paste(" in a group within ",disUniq[dId,2],sep="")),sep="")
                             
                         }
-                        if (subset1Flag=="_withLung") {
-                            fName=sub(".txt",paste(subset1Flag,".txt",sep=""),fName,fixed=T)
-                            heading=sub(":"," with lung:",heading)
+                        if (subset1Flag!="") {
+                            if (subset1Flag=="_withLung") {
+                                fName=sub(".txt",paste(subset1Flag,".txt",sep=""),fName,fixed=T)
+                                heading=sub(":"," with lung:",heading)
+                            }
+                            if (length(grep("grade",subset1Flag))==1) {
+                                fName=sub(".txt",paste(subset1Flag,".txt",sep=""),fName,fixed=T)
+                                heading=sub(":"," grade3:",heading)
+                            }
+                            x=strsplit(subset1Flag,"_")[[1]]
+                            if ("noAmp"%in%x) {
+                                heading=sub(":",", no amphicrine:",heading)
+                            }
                         }
                         if (length(i)!=0) {
                             colListThis=colList
@@ -832,7 +897,11 @@ for (nameValueFlag in nameValueList) {
                             for (grpId in 1:nrow(grpUniq3)) {
                                 if (res[which(names(res)==grpUniq3[grpId,1])]<samSize[1]) next
                                 k1=grep("qv_anyAlt_",colnames(outQvAll),fixed=T)
-                                k1=k1[grep(grpUniq3[grpId,1],colnames(outQvAll)[k1],fixed=T)]
+                                #k1=k1[grep(grpUniq3[grpId,1],colnames(outQvAll)[k1],fixed=T)]
+                                k1=k1[sapply(sub("qv_anyAlt_","",colnames(outQvAll))[k1],function(x) {
+                                    y=strsplit(x,"V")[[1]]
+                                    grpUniq3[grpId,1]%in%y
+                                },USE.NAMES=F)]
                                 nm1=colnames(outQvAll)[k1]
                                 nm11=nm1
                                 nm1=sub("qv_anyAlt_","",sub(paste("V",grpUniq3[grpId,1],sep=""),"",sub(paste(grpUniq3[grpId,1],"V",sep=""),"",nm1,fixed=T),fixed=T))
@@ -918,8 +987,9 @@ for (nameValueFlag in nameValueList) {
                                     cexAxis=1
                                 }
                                 if (length(gId)>10) {
-                                    pdf(paste(fName2,".pdf",sep=""),width=3*7,height=7)
-                                    cexAxis2=.7
+                                    #pdf(paste(fName2,".pdf",sep=""),width=3*7,height=7)
+                                    pdf(paste(fName2,".pdf",sep=""),width=4*7,height=7)
+                                    cexAxis2=.8
                                 } else {
                                     pdf(paste(fName2,".pdf",sep=""),width=2*7,height=7)
                                     cexAxis2=1.2
@@ -927,14 +997,14 @@ for (nameValueFlag in nameValueList) {
                             }
                             )
                             
-                            #cexAxis2=1
                             par(mar=c(8, 5, 0, 0) + 0.1)
                             par(mar=c(8.5, 5, 1, 0) + 0.1)
                             out=NULL
                             nm=c()
                             for (kk in gId) {
                                 for (grpId in 1:nrow(grpUniq3)) {
-                                    ll=grep(paste("_",grpUniq3[grpId,1],sep=""),colnames(out4AltPropAll),fixed=T)
+                                    #ll=grep(paste("_",grpUniq3[grpId,1],sep=""),colnames(out4AltPropAll),fixed=T)
+                                    ll=which(colnames(out4AltPropAll)==paste("anyAlt_",grpUniq3[grpId,1],sep=""))
                                     out=rbind(out,out4AltPropAll[kk,ll])
                                     #nm=c(nm,paste(ifelse(grpId==1,paste(rownames(out4AltPropAll)[kk]," ",sep=""),""),grpUniq3[grpId,2],sep=""))
                                     nm=c(nm,paste(grpUniq3[grpId,2],"    ",sep=""))
@@ -973,6 +1043,10 @@ for (nameValueFlag in nameValueList) {
         }
     }
 }
+
+####################################################################
+####################################################################
+## Section 3: Optional
 
 library(marray)
 fName="_forLongTailPlot"
@@ -1095,3 +1169,4 @@ if (F) {
         print(table(datGP_m[i,]==x,exclude=NULL))
     }
 }
+####################################################################
