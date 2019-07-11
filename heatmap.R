@@ -59,11 +59,12 @@ genesetFlag="geneByCellSize_actionableGene_fionaVetted_noOtherGI_T5aT7Assays"
 
 nameValueList=c("allSamples","jeffVetted","fionaVetted")
 nameValueList=c("jeffVetted")
-nameValueList=c("allSamples")
 nameValueList=c("fionaVetted")
 nameValueList=c("ucsf500")
 nameValueList=c("ucsf500Fmi")
+nameValueList=c("allSamples")
 for (nameValueFlag in nameValueList) {
+    datVerFlag=""
     switch(nameValueFlag,
     "allSamples"={nameValue=data.frame(name="subset",value="allSamples")
     },
@@ -131,11 +132,11 @@ for (nameValueFlag in nameValueList) {
     
     clusterFlag=""; lineFlag=F
     
-    clusterFlag="_comutated"; lineFlag=T
-    clusterFlag="_comutatedGenes"; lineFlag=F
-    
     clusterFlag="_supervised"; lineFlag=T
     #clusterFlag=c(clusterFlag,"_topGenes"); lineFlag=T
+    
+    clusterFlag="_comutated"; lineFlag=T
+    clusterFlag="_comutatedGenes"; lineFlag=F
     
     #k=which(nameValue$name=="subset")
     datadir="results/"
@@ -187,6 +188,7 @@ for (nameValueFlag in nameValueList) {
             gene1=unique(clin1$gene[clin1$assayVersion=="T5a"])
             gene2=unique(clin1$gene[clin1$assayVersion=="T7"])
             subsetFlag="_allSamples_T5aT7Assays"
+            subsetFlag=""
             samId=which(clin1$gene%in%gene1[gene1%in%gene2] & clin1$assayVersion%in%c("T5a","T7"))
             samId03=which(clin3$id%in%clin1$id[samId])
             #k=which(nameValue$name=="subset")
@@ -215,8 +217,8 @@ for (nameValueFlag in nameValueList) {
     datTypeFlag=c("","")
     
     subset1Flag="_withLung"
-    subset1Flag=""
     subset1Flag="_grade3"
+    subset1Flag=""
     
     ordFlag=""
     ordFlag="_swiSnfEtc"
@@ -285,16 +287,19 @@ for (nameValueFlag in nameValueList) {
         out=getFamilyLevelInfo()
         datGP_m=out$datGP_m
         candGene=out$candGene
-        if (subset1Flag=="") {
-            j=which(!clinU$caseId%in%samExclId)
-            clinU=clinU[j,]
-            clin3=clin3[j,]
-            datGP=datGP[,j]
-            datGP_m=datGP_m[,j]
+        if (F) {
+            if (subset1Flag=="") {
+                j=which(!clinU$caseId%in%samExclId)
+                clinU=clinU[j,]
+                clin3=clin3[j,]
+                datGP=datGP[,j]
+                datGP_m=datGP_m[,j]
+            }
         }
     }
     
     library(marray)
+    library(qvalue)
     #source(paste(dirSrc,"functions/heatmap.5.R",sep=""))
     #source(paste(dirSrc,"functions/heatmapAcgh.7.R",sep=""))
     #source(paste(dirSrc,"functions/heatmap.5.4.R",sep=""))
@@ -305,7 +310,8 @@ for (nameValueFlag in nameValueList) {
     #source(paste("heatmap.5.5.R",sep=""))
     #source(paste(dirSrc,"functions/heatmap.5.5.R",sep=""))
     #source(paste(dirSrc,"functions/heatmap.5.6.R",sep=""))
-    source(paste(dirSrc,"functions/heatmap.5.7.R",sep=""))
+    #source(paste(dirSrc,"functions/heatmap.5.7.R",sep=""))
+    source(paste(dirSrc,"functions/heatmap.5.8.R",sep=""))
     
     datadir2="results/"
     
@@ -772,18 +778,21 @@ for (nameValueFlag in nameValueList) {
         }
         subsetFFlag="_men1"
         subsetFFlag=""
+        geneset2Flag=""
         load(file=paste(datadirG,"geneList",subset1Flag,".RData",sep=""))
         
         geneFamilyFlag=F
         geneFamilyFlag=T
         
-        datadirG=paste("results/swiSnf_modifier/genesCommonForDataset/comutation/",ifelse(geneFamilyFlag,"componentLevel","geneLevel"),"/",sep="")
-        geneset2Flag="_swiSnfEtc"
-        datadirG=paste("results/swiSnf_modifier/comutation/",ifelse(geneFamilyFlag,"componentLevel","geneLevel"),"/",sep="")
-        geneset2Flag="_swiSnfCompEtc"
-        geneset2Flag="_swiSnfEtc"
-        geneset2Flag="_swiSnfHisModAtmAtr"
-        load(file=paste(datadirG,"geneList",geneset2Flag,subsetFlag[2],subset1Flag,".RData",sep=""))
+        if (F) {
+            datadirG=paste("results/swiSnf_modifier/genesCommonForDataset/comutation/",ifelse(geneFamilyFlag,"componentLevel","geneLevel"),"/",sep="")
+            geneset2Flag="_swiSnfEtc"
+            datadirG=paste("results/swiSnf_modifier/comutation/",ifelse(geneFamilyFlag,"componentLevel","geneLevel"),"/",sep="")
+            geneset2Flag="_swiSnfCompEtc"
+            geneset2Flag="_swiSnfEtc"
+            geneset2Flag="_swiSnfHisModAtmAtr"
+            load(file=paste(datadirG,"geneList",geneset2Flag,subsetFlag[2],subset1Flag,".RData",sep=""))
+        }
         
         genesetList=names(geneList)
         geneset2List=geneset2Flag
@@ -805,6 +814,7 @@ for (nameValueFlag in nameValueList) {
     subset2List=c("")
     subset2List=c("_nec","_colorectal","_pancreas","_otherGI","_otherNonGI","_unknownPS","")
     subset2List=c("_nec","_colorectal","_pancreas","_other","_unknownPS","")
+    subset2List=c("_other")
     
     getCorFlag=T
     getCorFlag=F
@@ -835,6 +845,7 @@ for (nameValueFlag in nameValueList) {
     #genesetList="colon"
     #genesetList="pancreas"
     #genesetList="lungSmall"
+    genesetList="other"
     
     
     
@@ -1570,7 +1581,7 @@ for (nameValueFlag in nameValueList) {
                             #tbl=read.table(paste(datadirG,ifelse(testFlag=="cosine","cor","comut"),"_",genesetFlag,".txt",sep=""),sep="\t",h=T,quote="",comment.char="",as.is=T,fill=T)
                             tbl=read.table(paste(datadirG,ifelse(testFlag=="cosine","cor","comut"),"_",genesetFlag,geneset2Flag,subsetFlag[2],".txt",sep=""),sep="\t",h=T,quote="",comment.char="",as.is=T,fill=T)
                             arrayData=as.matrix(tbl[,-1])
-                            rownames(arrayData)=tbl$gene
+                            rownames(arrayData)=gsub("-",".",tbl$gene)
                             if (subsetFFlag!="") {
                                 nm=toupper(sub("_","",subsetFFlag))
                                 x=arrayData
@@ -1600,6 +1611,7 @@ for (nameValueFlag in nameValueList) {
                             genePvMat=genePvMat[j,j]
                             geneQvMat=geneQvMat[j,j]
                             x=geneMutList[[genesetFlag]]; names(x)=sub("-",".",names(x))
+                            #x=x[match(rownames(arrayData),names(x))]
                             if (subsetFFlag!="") {
                                 x=geneMutList[[genesetFlag]]; names(x)=sub("-",".",names(x))
                                 x=x[match(rownames(arrayData),names(x))]
@@ -1609,6 +1621,7 @@ for (nameValueFlag in nameValueList) {
                             genePvMat=genePvMat[j,j]
                             geneQvMat=geneQvMat[j,j]
                             annRow=annCol=data.frame(id=colnames(arrayData),gene=colnames(arrayData),geneFamily=rep("",ncol(arrayData)),mutPerc=x[match(colnames(arrayData),names(x))],stringsAsFactors=F)
+                            annRowAll=annColAll=annRow
                             arrayData[lower.tri(arrayData,diag=T)]=NA
                             genePvMat[lower.tri(arrayData,diag=T)]=NA
                             geneQvMat[lower.tri(arrayData,diag=T)]=NA
@@ -2136,28 +2149,28 @@ for (nameValueFlag in nameValueList) {
                                 } else {
                                     dat=arrayData2[ii,]
                                     switch(distMethod,
-                                        "pearson"={
-                                            distMat=as.dist(1 - cor(dat,method=distMethod,use="complete.obs"))
-                                        },
-                                        "spearman"={
-                                            distMat=as.dist(1 - cor(dat,method=distMethod,use="complete.obs"))
-                                        },
-                                        "kendall"={
-                                            if (getCorFlag) {
-                                                corMat2=cor(dat,method=distMethod,use="complete.obs")
-                                                save(corMat2,file=paste("corMat",fNameOut,".RData",sep=""))
-                                            } else {
-                                                load(file=paste(datadir2,"corMat",fNameOut,".RData",sep=""))
-                                            }
-                                            distMat=as.dist(1 - corMat2)
-                                        },
-                                        "euclidean"={
-                                            distMat=dist(dat, method=distMethod)
-                                        },
-                                        "cosine"={
-                                            if (any(apply(dat,1,sum,na.rm=T)==0)) dat=dat+1
-                                            distMat=getCosineDist(dat)
+                                    "pearson"={
+                                        distMat=as.dist(1 - cor(dat,method=distMethod,use="complete.obs"))
+                                    },
+                                    "spearman"={
+                                        distMat=as.dist(1 - cor(dat,method=distMethod,use="complete.obs"))
+                                    },
+                                    "kendall"={
+                                        if (getCorFlag) {
+                                            corMat2=cor(dat,method=distMethod,use="complete.obs")
+                                            save(corMat2,file=paste("corMat",fNameOut,".RData",sep=""))
+                                        } else {
+                                            load(file=paste(datadir2,"corMat",fNameOut,".RData",sep=""))
                                         }
+                                        distMat=as.dist(1 - corMat2)
+                                    },
+                                    "euclidean"={
+                                        distMat=dist(dat, method=distMethod)
+                                    },
+                                    "cosine"={
+                                        if (any(apply(dat,1,sum,na.rm=T)==0)) dat=dat+1
+                                        distMat=getCosineDist(dat)
+                                    }
                                     )
                                     clustR=try(hclust(distMat, method=linkMethod))
                                     if (class(clustR)=="try-error") {
@@ -2415,7 +2428,7 @@ for (nameValueFlag in nameValueList) {
                             cexThis[2]=1
                             cexThis[3]=1
                         }
-                        nameCol=rep("",length(nameCol))
+                        #nameCol=rep("",length(nameCol))
                         if ("gene"%in%varListAll) cexThis[2]=1
                         #if (length(colHM[[1]])>1) {
                         if (is.null(colHM[[2]])) {

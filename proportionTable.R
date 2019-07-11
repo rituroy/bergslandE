@@ -58,10 +58,10 @@ library(qvalue)
 
 nameValueList=c("allSamples","jeffVetted","fionaVetted")
 nameValueList=c("fionaVettedUcsf500")
-nameValueList=c("allSamples")
 nameValueList=c("fionaVetted")
 nameValueList=c("ucsf500")
 nameValueList=c("ucsf500Fmi")
+nameValueList=c("allSamples")
 for (nameValueFlag in nameValueList) {
     switch(nameValueFlag,
     "allSamples"={nameValue=data.frame(name="subset",value="allSamples")
@@ -168,6 +168,7 @@ for (nameValueFlag in nameValueList) {
         out=getFamilyLevelInfo()
         datGP_m=out$datGP_m
         candGene=out$candGene
+        samSizeAll=length(grep("anyAlt_",colnames(datGP)))
     }
     
     geneFamilyFlag=T
@@ -249,10 +250,10 @@ for (nameValueFlag in nameValueList) {
         samSize=c(0,0)
     }
     
-    subset1Flag=""
     subset1Flag="_withLung"
     subset1Flag="_grade3"
     subset1Flag="_grade3_noAmp"
+    subset1Flag=""
     
     ## All genesets
     #genesetList=c("_swiSnfComp","_histoneMod","_swiSnfHisMod","_swiSnfPlusHisMod","_atmAtr","_rbEtc","_swiSnfEtc")
@@ -542,7 +543,7 @@ for (nameValueFlag in nameValueList) {
                     }
                 }
                 if (subset1Flag=="") {
-                    samIdAll=samIdAll[!clinThis$caseId[samIdAll]%in%samExclId]
+                    if (exists("samExclId")) samIdAll=samIdAll[!clinThis$caseId[samIdAll]%in%samExclId]
                 } else {
                     x=strsplit(subset1Flag,"_")[[1]]
                     k=grep("grade",x)
@@ -585,11 +586,11 @@ for (nameValueFlag in nameValueList) {
                         },
                         "diffNJ"={#grpUniq3=sort(unique(clinThis[,varList[varId]]))
                             grpUniq3=cbind(c("adenocarcinoma","ambiguous","couldbeamphicrinecarcinoma","g1net","g2net","g3net","nec","net"),
-                                c("Adenocarcinoma","Ambiguous","Amphicrinecarcinoma?","G1NET","G2NET","G3NET","NEC","NET"),
-                                c("Ad","Amb","Amp","G1","G2","G3","Nc","Nt"))
-                                grpUniq3=cbind(c("adenocarcinoma","ambiguous","could be amphicrine carcinoma","g1 net","g2 net","g3 net","nec"),
-                                c("Adenocarcinoma","Ambiguous","Amphicrine","G1 NET","G2 NET","G3 NET","NEC"),
-                                c("Ad","Amb","Amp","G1","G2","G3","Nc"))
+                            c("Adenocarcinoma","Ambiguous","Amphicrinecarcinoma?","G1NET","G2NET","G3NET","NEC","NET"),
+                            c("Ad","Amb","Amp","G1","G2","G3","Nc","Nt"))
+                            grpUniq3=cbind(c("adenocarcinoma","ambiguous","could be amphicrine carcinoma","g1 net","g2 net","g3 net","nec"),
+                            c("Adenocarcinoma","Ambiguous","Amphicrine","G1 NET","G2 NET","G3 NET","NEC"),
+                            c("Ad","Amb","Amp","G1","G2","G3","Nc"))
                         },
                         "gradeThis"={
                             #grpUniq3=paste("grade",c("2","3"),sep="")
@@ -652,6 +653,8 @@ for (nameValueFlag in nameValueList) {
                             }
                         }
                     }
+                    grpUniq3=as.data.frame(grpUniq3,stringsAsFactors=F)
+                    names(grpUniq3)=c("id","name","symbol")
                     samIdThis=samIdAll
                     outAnyAlt=datGPThis[,grep("anyAlt_",colnames(datGPThis))]
                     rownames(outAnyAlt)=rownames(datGPThis)
@@ -663,9 +666,9 @@ for (nameValueFlag in nameValueList) {
                     }
                     outAnyAlt=outAnyAlt[,j]
                     
-                    outPropAll=matrix(0,nrow=nrow(outAnyAlt),ncol=nrow(grpUniq3),dimnames=list(rownames(outAnyAlt),grpUniq3[,1]))
+                    outPropAll=matrix(0,nrow=nrow(outAnyAlt),ncol=nrow(grpUniq3),dimnames=list(rownames(outAnyAlt),grpUniq3$id))
                     outPropCombAll=rep(0,nrow(outAnyAlt))
-                    j=which(clinThis[samIdThis,varList[varId]]%in%grpUniq3[,1])
+                    j=which(clinThis[samIdThis,varList[varId]]%in%grpUniq3$id)
                     for (g1 in 1:nrow(outPropAll)) {
                         res=table(grp=clinThis[samIdThis[j],varList[varId]],anyAlt=outAnyAlt[g1,j])
                         x1=apply(res,1,sum)
@@ -700,7 +703,7 @@ for (nameValueFlag in nameValueList) {
                     out4Alt=out4Alt[,j]
                     
                     out4AltPropCombAll=matrix(0,nrow=nrow(outAnyAlt),ncol=nrow(altTypeUniq2)+1,dimnames=list(rownames(outAnyAlt),c("noAlt",altTypeUniq2[,1])))
-                    out4AltPropAll=matrix(0,nrow=nrow(outAnyAlt),ncol=nrow(grpUniq3)*(nrow(altTypeUniq2)+1),dimnames=list(rownames(outAnyAlt),paste(rep(c("noAlt",altTypeUniq2[,1]),each=nrow(grpUniq3)),grpUniq3[,1],sep="_")))
+                    out4AltPropAll=matrix(0,nrow=nrow(outAnyAlt),ncol=nrow(grpUniq3)*(nrow(altTypeUniq2)+1),dimnames=list(rownames(outAnyAlt),paste(rep(c("noAlt",altTypeUniq2[,1]),each=nrow(grpUniq3)),grpUniq3$id,sep="_")))
                     colId=c("0",altTypeUniq2[,2])
                     x=as.character(sort(unique(c(out4Alt))))
                     k=which(!x%in%colId)
@@ -710,19 +713,22 @@ for (nameValueFlag in nameValueList) {
                         out4AltPropCombAll[g1,match(names(res),colId)]=res/sum(res)
                         for (k in 1:nrow(grpUniq3)) {
                             j=which(clinThis[samIdThis,varList[varId]]==grpUniq3[k,1])
-                            #kk=grep(paste("_",grpUniq3[k,1],sep=""),colnames(out4AltPropAll),fixed=T)
-                            kk=which(colnames(out4AltPropAll)%in%paste(c("noAlt","anyAlt"),"_",grpUniq3[k,1],sep=""))
+                            if ("anyAlt"%in%altTypeUniq1) {
+                                kk=which(colnames(out4AltPropAll)%in%paste(c("noAlt","anyAlt"),"_",grpUniq3[k,1],sep=""))
+                            } else {
+                                kk=grep(paste("_",grpUniq3[k,1],sep=""),colnames(out4AltPropAll),fixed=T)
+                            }
                             res=table(out4Alt[g1,j])
                             out4AltPropAll[g1,kk[match(names(res),colId)]]=res/sum(res)
                         }
                     }
                     out4AltPropCombAll=out4AltPropCombAll[,altTypeUniq2[,1]]
-                    out4AltPropAll=out4AltPropAll[,paste(rep(altTypeUniq2[,1],each=nrow(grpUniq3)),grpUniq3[,1],sep="_")]
+                    out4AltPropAll=out4AltPropAll[,paste(rep(altTypeUniq2[,1],each=nrow(grpUniq3)),grpUniq3$id,sep="_")]
                     if (nrow(altTypeUniq2)==1) {
                         out4AltPropCombAll=matrix(out4AltPropCombAll,ncol=1,dimnames=list(names(out4AltPropCombAll),altTypeUniq2[,1]))
                     }
                     if (nrow(grpUniq3)==1) {
-                        out4AltPropAll=matrix(out4AltPropAll,ncol=1,dimnames=list(names(out4AltPropAll),paste(rep(altTypeUniq2[,1],each=nrow(grpUniq3)),grpUniq3[,1],sep="_")))
+                        out4AltPropAll=matrix(out4AltPropAll,ncol=1,dimnames=list(names(out4AltPropAll),paste(rep(altTypeUniq2[,1],each=nrow(grpUniq3)),grpUniq3$id,sep="_")))
                     }
                     
                     outPvAll=matrix(nrow=nrow(outPropAll),ncol=nrow(grpUniq32),dimnames=list(rownames(outPropAll),paste("pv_anyAlt_",rep(paste(grpUniq32[,2],grpUniq32[,1],sep="V"),each=1),sep="")))
@@ -874,8 +880,8 @@ for (nameValueFlag in nameValueList) {
                         if (length(i)!=0) {
                             colListThis=colList
                             if (length(grep("_ucsf500",subset2Flag))==1) {
-                                x=table(clinThis[samIdThis,varList[varId]][which(clinThis[samIdThis,varList[varId]]%in%grpUniq3[,1])])
-                                x=x[match(grpUniq3[,1],names(x))]
+                                x=table(clinThis[samIdThis,varList[varId]][which(clinThis[samIdThis,varList[varId]]%in%grpUniq3$id)])
+                                x=x[match(grpUniq3$id,names(x))]
                                 colListThis=rev(gray((1:samSizeAll)/samSizeAll))[c(x,1)]
                             }
                             nmR=rownames(outPropAll)[i]
@@ -893,18 +899,18 @@ for (nameValueFlag in nameValueList) {
                             }
                             i=match(rownames(outQvAll),rownames(outPropThis)); i1=which(!is.na(i)); i2=i[i1]
                             colnames(outPercThis)=paste("anyAlt_",colnames(outPercThis),sep="")
-                            res=table(clinThis[samIdThis,varList[varId]][which(clinThis[samIdThis,varList[varId]]%in%grpUniq3[,1])])
+                            res=table(clinThis[samIdThis,varList[varId]][which(clinThis[samIdThis,varList[varId]]%in%grpUniq3$id)])
                             for (grpId in 1:nrow(grpUniq3)) {
-                                if (res[which(names(res)==grpUniq3[grpId,1])]<samSize[1]) next
+                                if (res[which(names(res)==grpUniq3$id[grpId])]<samSize[1]) next
                                 k1=grep("qv_anyAlt_",colnames(outQvAll),fixed=T)
-                                #k1=k1[grep(grpUniq3[grpId,1],colnames(outQvAll)[k1],fixed=T)]
+                                #k1=k1[grep(grpUniq3$id[grpId],colnames(outQvAll)[k1],fixed=T)]
                                 k1=k1[sapply(sub("qv_anyAlt_","",colnames(outQvAll))[k1],function(x) {
                                     y=strsplit(x,"V")[[1]]
-                                    grpUniq3[grpId,1]%in%y
+                                    grpUniq3$id[grpId]%in%y
                                 },USE.NAMES=F)]
                                 nm1=colnames(outQvAll)[k1]
                                 nm11=nm1
-                                nm1=sub("qv_anyAlt_","",sub(paste("V",grpUniq3[grpId,1],sep=""),"",sub(paste(grpUniq3[grpId,1],"V",sep=""),"",nm1,fixed=T),fixed=T))
+                                nm1=sub("qv_anyAlt_","",sub(paste("V",grpUniq3$id[grpId],sep=""),"",sub(paste(grpUniq3$id[grpId],"V",sep=""),"",nm1,fixed=T),fixed=T))
                                 nm21=colnames(outPercThis)[grep("anyAlt_",colnames(outPercThis),fixed=T)]
                                 nm2=sub("anyAlt_","",colnames(outPercThis)[grep("anyAlt_",colnames(outPercThis),fixed=T)],fixed=T)
                                 #x=" "
@@ -916,16 +922,16 @@ for (nameValueFlag in nameValueList) {
                                     if (length(ii)!=0) {
                                         x=rep("",length(ii))
                                         if (confIntFlag) {
-                                            x=paste(x,grpUniq3[grpId,3],"(",ifelse(length(ii2)!=0,outEstAll[i1[ii],nm11[k]],tolower(outEstAll[i1[ii],nm11[k]])),"),",sep="")
+                                            x=paste(x,grpUniq3$symbol[grpId],"(",ifelse(length(ii2)!=0,outEstAll[i1[ii],nm11[k]],tolower(outEstAll[i1[ii],nm11[k]])),"),",sep="")
                                         } else {
-                                            x=paste(x,ifelse(length(ii2)!=0,grpUniq3[grpId,3],tolower(grpUniq3[grpId,3])),sep="")
+                                            x=paste(x,ifelse(length(ii2)!=0,grpUniq3$symbol[grpId],tolower(grpUniq3$symbol[grpId])),sep="")
                                         }
                                         outPercThis[i2[ii],k21]=paste(outPercThis[i2[ii],k21],x,sep="")
                                     }
                                 }
                             }
                             outPercThis=sub(",$","",outPercThis)
-                            x=table(clinThis[samIdThis,varList[varId]][which(clinThis[samIdThis,varList[varId]]%in%grpUniq3[,1])])
+                            x=table(clinThis[samIdThis,varList[varId]][which(clinThis[samIdThis,varList[varId]]%in%grpUniq3$id)])
                             x=x[order(x,decreasing=T)]
                             nm=names(x)
                             colnames(outPercThis)=sub("anyAlt_","",colnames(outPercThis))
@@ -937,7 +943,7 @@ for (nameValueFlag in nameValueList) {
                                     outPercThis=matrix(outPercThis,nrow=1,dimnames=list(nmR,colnames(outPropAll)))
                                 }
                             }
-                            nm=grpUniq3[match(colnames(outPercThis),grpUniq3[,1]),2]
+                            nm=grpUniq3[match(colnames(outPercThis),grpUniq3$id),2]
                             nm=paste(c("gene",paste(nm," (N=",x,")",sep="")),collapse="\t")
                             tbl=cbind(gene=rownames(outPercThis),data.frame(outPercThis))
                             if (length(grep("_noOtherGI",subset2Flag))==1) {
@@ -946,7 +952,7 @@ for (nameValueFlag in nameValueList) {
                             }
                             write.table(heading,file=fName,append=F,col.names=F,row.names=F,sep="\t",quote=F)
                             #write.table(paste("N = ",sum(x),sep=""),file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
-                            write.table(paste(ifelse(varList[varId]=="gradeThis" & "gradeT"%in%grpUniq3[,1],"T = grade 2/3, ",""),"N = ",sum(x),sep=""),file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
+                            write.table(paste(ifelse(varList[varId]=="gradeThis" & "gradeT"%in%grpUniq3$id,"T = grade 2/3, ",""),"N = ",sum(x),sep=""),file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
                             write.table("",file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
                             write.table(nm,file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
                             write.table(tbl,file=fName,append=T,col.names=F,row.names=F,sep="\t",quote=F)
@@ -1003,13 +1009,16 @@ for (nameValueFlag in nameValueList) {
                             nm=c()
                             for (kk in gId) {
                                 for (grpId in 1:nrow(grpUniq3)) {
-                                    #ll=grep(paste("_",grpUniq3[grpId,1],sep=""),colnames(out4AltPropAll),fixed=T)
-                                    ll=which(colnames(out4AltPropAll)==paste("anyAlt_",grpUniq3[grpId,1],sep=""))
+                                    if ("anyAlt"%in%altTypeUniq1) {
+                                        ll=which(colnames(out4AltPropAll)==paste("anyAlt_",grpUniq3$id[grpId],sep=""))
+                                    } else {
+                                        ll=grep(paste("_",grpUniq3$id[grpId],sep=""),colnames(out4AltPropAll),fixed=T)
+                                    }
                                     out=rbind(out,out4AltPropAll[kk,ll])
-                                    #nm=c(nm,paste(ifelse(grpId==1,paste(rownames(out4AltPropAll)[kk]," ",sep=""),""),grpUniq3[grpId,2],sep=""))
-                                    nm=c(nm,paste(grpUniq3[grpId,2],"    ",sep=""))
+                                    #nm=c(nm,paste(ifelse(grpId==1,paste(rownames(out4AltPropAll)[kk]," ",sep=""),""),grpUniq3$name[grpId],sep=""))
+                                    nm=c(nm,paste(grpUniq3$name[grpId],"    ",sep=""))
                                     #nm=c(nm,paste(c(grpUniq[grpId,2],rep("",length(gId)-1)),rownames(out4AltPropAll)[gId],sep=""))
-                                    #barplot(100*t(out4AltPropAll[gId,ll]),names.arg=rownames(out4AltPropAll)[gId],main=ifelse(grpId==1,heading2,""),sub=grpUniq3[grpId,2],ylab="% alteration",col=colListThis,las=3,cex.axis=.7)
+                                    #barplot(100*t(out4AltPropAll[gId,ll]),names.arg=rownames(out4AltPropAll)[gId],main=ifelse(grpId==1,heading2,""),sub=grpUniq3$name[grpId],ylab="% alteration",col=colListThis,las=3,cex.axis=.7)
                                 }
                                 out=rbind(out,rep(0,ncol(out)))
                                 nm=c(nm,"")
@@ -1020,7 +1029,7 @@ for (nameValueFlag in nameValueList) {
                             nm=sub("+","    \n+ ",nm,fixed=T)
                             rownames(out)=nm
                             grpId=1
-                            x=table(clinThis[samIdThis,varList[varId]][which(clinThis[samIdThis,varList[varId]]%in%grpUniq3[,1])])
+                            x=table(clinThis[samIdThis,varList[varId]][which(clinThis[samIdThis,varList[varId]]%in%grpUniq3$id)])
                             if (ncol(out)==1) out2=100*c(out) else out2=100*t(out)
                             barplot(out2,names.arg=rownames(out),ylim=yLim,main=ifelse(grpId==1,heading2,""),ylab="% alteration",col=colListThis,las=3,cex.names=cexAxis,cex.axis=cexAxis,cex.lab=cexLab,space=0)
                             #axis(side=1,at=1:length(gId),labels=rownames(out4AltPropAll)[gId])
@@ -1072,8 +1081,8 @@ if (F) {
         z1=as.integer(apply(x,1,function(x) {any(!is.na(x)) & any(x!=0,na.rm=T)}))
         z2=as.integer(apply(x,2,function(x) {any(!is.na(x)) & any(x!=0,na.rm=T)}))
     }
-
-
+    
+    
     fName="_forLongTailPlot"
     width = 480; height = 480
     if (outFormat=="png") {
